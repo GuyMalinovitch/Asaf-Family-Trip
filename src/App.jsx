@@ -4,6 +4,9 @@ import Login from './Login';
 import Home from './Home';
 import ProtectedRoute from './ProtectedRoute';
 import Layout from './Layout';
+import Itinerary from './Itinerary';
+import Guidebook from './Guidebook';
+import Docs from './Docs';
 
 export default function App() {
   const [auth, setAuth] = useState(false);
@@ -22,9 +25,9 @@ export default function App() {
               <Routes>
                 <Route element={<Layout />}>
                   <Route path="/" element={<Home />} />
-                  <Route path="/itinerary" element={<h2>Itinerary Calendar</h2>} />
-                  <Route path="/vault" element={<h2>Logistics Vault</h2>} />
-                  <Route path="/guidebook" element={<h2>Guidebook & Maps</h2>} />
+                  <Route path="/itinerary" element={<Itinerary />} />
+                  <Route path="/docs" element={<Docs />} />
+                  <Route path="/guidebook" element={<Guidebook />} />
                 </Route>
               </Routes>
             </ProtectedRoute>
