@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './Login';
 import Home from './Home';
 import ProtectedRoute from './ProtectedRoute';
+import Layout from './Layout';
 
 export default function App() {
   const [auth, setAuth] = useState(false);
@@ -18,7 +19,14 @@ export default function App() {
           path="/*"
           element={
             <ProtectedRoute auth={auth}>
-              <Home />
+              <Routes>
+                <Route element={<Layout />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/itinerary" element={<h2>Itinerary Calendar</h2>} />
+                  <Route path="/vault" element={<h2>Logistics Vault</h2>} />
+                  <Route path="/guidebook" element={<h2>Guidebook & Maps</h2>} />
+                </Route>
+              </Routes>
             </ProtectedRoute>
           }
         />
@@ -26,3 +34,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+

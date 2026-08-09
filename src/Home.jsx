@@ -1,3 +1,4 @@
 export default function Home() {
-  return <div>Welcome to the Hub</div>;
+  return <h2>Home Widget</h2>;
 }
+
