@@ -9,14 +9,20 @@ import Guidebook from './Guidebook';
 import Docs from './Docs';
 
 export default function App() {
-  const [auth, setAuth] = useState(false);
+  const [auth, setAuth] = useState(() => localStorage.getItem('familyTripAuth') === 'true');
+
+  const handleLogin = (status) => {
+    if (status) localStorage.setItem('familyTripAuth', 'true');
+    else localStorage.removeItem('familyTripAuth');
+    setAuth(status);
+  };
 
   return (
     <BrowserRouter>
       <Routes>
         <Route
           path="/login"
-          element={auth ? <Navigate to="/" replace /> : <Login onLogin={setAuth} />}
+          element={auth ? <Navigate to="/" replace /> : <Login onLogin={handleLogin} />}
         />
         <Route
           path="/*"

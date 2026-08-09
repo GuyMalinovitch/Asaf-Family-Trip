@@ -1,13 +1,10 @@
 import { useState } from 'react';
-
-const initialDocs = [
-  { id: 1, title: 'Flight Tickets - outbound', uploader: 'Asaf', category: 'Flights', icon: '✈️' },
-  { id: 2, title: 'Tatralandia Booking', uploader: 'Mom', category: 'Hotels', icon: '🏨' },
-  { id: 3, title: 'Hertz Rental Agreement', uploader: 'Dad', category: 'Cars', icon: '🚗' },
-];
+import { useTranslation } from 'react-i18next';
 
 export default function Docs() {
-  const [docs, setDocs] = useState(initialDocs);
+  const { t } = useTranslation();
+  const docsData = t('docsData', { returnObjects: true });
+  const [docs, setDocs] = useState(docsData);
   const [isAdding, setIsAdding] = useState(false);
   const [newDoc, setNewDoc] = useState({ title: '', uploader: '', category: 'General' });
 
@@ -30,11 +27,9 @@ export default function Docs() {
     <div style={{ paddingBottom: '80px', position: 'relative', minHeight: '80vh' }}>
       
       {/* Header */}
-      <div style={{ marginBottom: '20px' }}>
-        <h1 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-dark)' }}>Docs & Logistics</h1>
-        <p style={{ margin: '5px 0 0 0', color: '#555', fontWeight: '600' }}>
-          All important family documents
-        </p>
+      <div style={{ textAlign: 'center', marginBottom: '25px' }}>
+        <h1 style={{ fontSize: '1.8rem', color: 'var(--text-dark)', marginBottom: '5px' }}>{t('docs.title')}</h1>
+        <p style={{ color: '#666', margin: 0 }}>{t('docs.subtitle')}</p>
       </div>
 
       {/* Docs Grid */}
@@ -70,9 +65,11 @@ export default function Docs() {
             </button>
           </div>
         ))}
-        {docs.length === 0 && (
-          <p style={{ textAlign: 'center', color: '#777', marginTop: '20px' }}>No documents uploaded yet.</p>
-        )}
+        {docs.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
+            {t('docs.noDocs')}
+          </div>
+        ) : null}
       </div>
 
       {/* Add Doc Modal */}
@@ -82,35 +79,30 @@ export default function Docs() {
           background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
         }}>
           <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)' }}>
-            <h3 style={{ margin: '0 0 15px 0' }}>Upload Document</h3>
+            <h3 style={{ margin: '0 0 15px 0' }}>{t('docs.uploadTitle')}</h3>
             <form onSubmit={handleAddDoc} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              
-              <input required type="text" placeholder="Document Title (e.g. Flight 410)" className="glass-input" style={{ padding: '10px' }}
+              <input required type="text" placeholder={t('docs.docTitle')} className="glass-input" style={{ padding: '10px' }}
                 value={newDoc.title} onChange={e => setNewDoc({...newDoc, title: e.target.value})} />
-              
-              <input required type="text" placeholder="Your Name" className="glass-input" style={{ padding: '10px' }}
+              <input required type="text" placeholder={t('docs.uploader')} className="glass-input" style={{ padding: '10px' }}
                 value={newDoc.uploader} onChange={e => setNewDoc({...newDoc, uploader: e.target.value})} />
               
               <select className="glass-input" style={{ padding: '10px', appearance: 'none' }}
                 value={newDoc.category} onChange={e => setNewDoc({...newDoc, category: e.target.value})}>
-                <option value="General">General</option>
-                <option value="Flights">Flights</option>
-                <option value="Hotels">Hotels</option>
-                <option value="Cars">Rental Cars</option>
-                <option value="Insurance">Insurance</option>
+                <option value="General">{t('docs.cats.general')}</option>
+                <option value="Flights">{t('docs.cats.flights')}</option>
+                <option value="Hotels">{t('docs.cats.hotels')}</option>
+                <option value="Cars">{t('docs.cats.cars')}</option>
+                <option value="Insurance">{t('docs.cats.insurance')}</option>
               </select>
 
               {/* Fake file input for UI purposes */}
-              <div style={{
-                border: '2px dashed #ccc', borderRadius: '12px', padding: '20px', textAlign: 'center',
-                color: '#666', cursor: 'pointer', background: 'rgba(0,0,0,0.02)'
-              }}>
-                📄 Tap to select file...
+              <div style={{ padding: '20px', border: '2px dashed var(--primary)', borderRadius: '12px', textAlign: 'center', color: 'var(--primary)', cursor: 'pointer', background: 'rgba(0,198,255,0.05)' }}>
+                {t('docs.tapFile')}
               </div>
-
+              
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="button" onClick={() => setIsAdding(false)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>Cancel</button>
-                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>Upload</button>
+                <button type="button" onClick={() => setIsAdding(false)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>{t('docs.cancel')}</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>{t('docs.upload')}</button>
               </div>
             </form>
           </div>
@@ -121,7 +113,7 @@ export default function Docs() {
       <button 
         onClick={() => setIsAdding(true)}
         style={{
-          position: 'fixed', bottom: '90px', right: '20px', width: '56px', height: '56px',
+          position: 'fixed', bottom: '90px', insetInlineEnd: '20px', width: '56px', height: '56px',
           borderRadius: '50%', background: 'var(--primary)', color: 'white', border: 'none',
           fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 4px 15px rgba(0, 198, 255, 0.5)', cursor: 'pointer', zIndex: 50,

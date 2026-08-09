@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { itineraryData as initialData } from './data/itinerary';
+import { useTranslation } from 'react-i18next';
 
 // Helper to convert "HH:mm" to minutes since 00:00
 const timeToMins = (timeStr) => {
@@ -8,9 +8,12 @@ const timeToMins = (timeStr) => {
 };
 
 export default function Itinerary() {
-  const [data, setData] = useState(initialData);
-  const [activeDayId, setActiveDayId] = useState(initialData[0].id);
-  const [viewMode, setViewMode] = useState('feed'); // 'feed' | 'calendar'
+  const { t } = useTranslation();
+  const itineraryData = t('itineraryData', { returnObjects: true });
+  
+  const [data, setData] = useState(itineraryData);
+  const [activeDayId, setActiveDayId] = useState(itineraryData[0].id);
+  const [viewMode, setViewMode] = useState('calendar'); // 'feed' | 'calendar'
   const [isAdding, setIsAdding] = useState(false);
   
   // New event form state
@@ -69,7 +72,7 @@ export default function Itinerary() {
       {/* Header & Controls */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-dark)' }}>Itinerary</h1>
+          <h1 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-dark)' }}>{t('itinerary.title')}</h1>
           <p style={{ margin: '5px 0 0 0', color: '#555', fontWeight: '600' }}>
             📍 {activeDay.location}
           </p>
@@ -80,21 +83,21 @@ export default function Itinerary() {
           <button 
             onClick={() => setViewMode('feed')}
             style={{
-              padding: '6px 12px', border: 'none', borderRadius: '16px', fontWeight: 'bold',
+              padding: '8px 16px', border: 'none', borderRadius: '12px', fontWeight: 'bold',
               background: viewMode === 'feed' ? 'white' : 'transparent',
-              boxShadow: viewMode === 'feed' ? '0 2px 5px rgba(0,0,0,0.1)' : 'none',
+              boxShadow: viewMode === 'feed' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
               color: viewMode === 'feed' ? 'var(--primary)' : '#666', cursor: 'pointer'
             }}
-          >Feed</button>
+          >{t('itinerary.feedBtn')}</button>
           <button 
             onClick={() => setViewMode('calendar')}
             style={{
-              padding: '6px 12px', border: 'none', borderRadius: '16px', fontWeight: 'bold',
+              padding: '8px 16px', border: 'none', borderRadius: '12px', fontWeight: 'bold',
               background: viewMode === 'calendar' ? 'white' : 'transparent',
-              boxShadow: viewMode === 'calendar' ? '0 2px 5px rgba(0,0,0,0.1)' : 'none',
+              boxShadow: viewMode === 'calendar' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
               color: viewMode === 'calendar' ? 'var(--primary)' : '#666', cursor: 'pointer'
             }}
-          >Calendar</button>
+          >{t('itinerary.calBtn')}</button>
         </div>
       </div>
 
@@ -168,7 +171,7 @@ export default function Itinerary() {
                   position: 'absolute', top: `${i * HOUR_HEIGHT}px`, left: 0, right: 0, height: `${HOUR_HEIGHT}px`, 
                   borderBottom: '1px solid #eaeaea', display: 'flex' 
                 }}>
-                  <div style={{ width: '50px', padding: '5px', fontSize: '0.75rem', color: '#888', textAlign: 'right', borderRight: '1px solid #eaeaea' }}>
+                  <div style={{ width: '50px', padding: '5px', fontSize: '0.75rem', color: '#888', textAlign: 'center', borderInlineEnd: '1px solid #eaeaea' }}>
                     {hour}:00
                   </div>
                 </div>
@@ -192,7 +195,7 @@ export default function Itinerary() {
                     position: 'absolute',
                     top: `${top}px`,
                     height: `${height}px`,
-                    left: `calc(50px + ${leftOffset}%)`, // offset by the time column width (50px)
+                    insetInlineStart: `calc(50px + ${leftOffset}%)`, // offset by the time column width (50px)
                     width: `calc(100% - 50px)`,
                     maxWidth: `${widthPct}%`,
                     padding: '2px' // spacing between overlapping events
@@ -227,7 +230,7 @@ export default function Itinerary() {
           background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
         }}>
           <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)' }}>
-            <h3 style={{ margin: '0 0 15px 0' }}>Add Event to {activeDay.date}</h3>
+            <h3 style={{ margin: '0 0 15px 0' }}>{t('itinerary.addEvent')} {activeDay.date}</h3>
             <form onSubmit={handleAddEvent} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <input required type="time" className="glass-input" style={{ padding: '10px', flex: 1 }}
@@ -235,13 +238,13 @@ export default function Itinerary() {
                 <input required type="number" placeholder="Min" className="glass-input" style={{ padding: '10px', flex: 1 }}
                   value={newEvent.duration} onChange={e => setNewEvent({...newEvent, duration: e.target.value})} />
               </div>
-              <input required type="text" placeholder="Title" className="glass-input" style={{ padding: '10px' }}
+              <input required type="text" placeholder={t('itinerary.modalTitle')} className="glass-input" style={{ padding: '10px' }}
                 value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} />
-              <textarea placeholder="Description" className="glass-input" style={{ padding: '10px', minHeight: '80px', resize: 'none' }}
+              <textarea placeholder={t('itinerary.modalDesc')} className="glass-input" style={{ padding: '10px', minHeight: '80px', resize: 'none' }}
                 value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})} />
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="button" onClick={() => setIsAdding(false)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>Cancel</button>
-                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>Add Event</button>
+                <button type="button" onClick={() => setIsAdding(false)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>{t('itinerary.cancel')}</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>{t('itinerary.add')}</button>
               </div>
             </form>
           </div>
@@ -252,7 +255,7 @@ export default function Itinerary() {
       <button 
         onClick={() => setIsAdding(true)}
         style={{
-          position: 'fixed', bottom: '90px', right: '20px', width: '56px', height: '56px',
+          position: 'fixed', bottom: '90px', insetInlineEnd: '20px', width: '56px', height: '56px',
           borderRadius: '50%', background: 'var(--primary)', color: 'white', border: 'none',
           fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 4px 15px rgba(0, 198, 255, 0.5)', cursor: 'pointer', zIndex: 50,

@@ -1,16 +1,35 @@
-# React + Vite
+# Asaf Family Trip App 🌍
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A beautiful, bilingual (Hebrew & English) React/Vite progressive web app designed to act as a centralized hub for the Asaf Family Trip to Budapest and Slovakia (Aug 20 - 29, 2026).
 
-Currently, two official plugins are available:
+## Features
+- **Live Weather Forecast**: Uses Open-Meteo API to fetch 16-day forecasts for Budapest & Tatralandia.
+- **Bilingual Interface**: Full i18n support (English / Hebrew) with dynamic LTR/RTL layout mirroring.
+- **Smart Itinerary**: Outlook-style interactive calendar grid for overlapping events, and a simple Feed view.
+- **Document Hub**: Centralized place to track flight PNRs, hotel bookings, and rental agreements.
+- **Interactive Guidebook**: Google Maps deep-links for instantly dropping pins onto family members' native Maps apps.
+- **Route Guard**: Simple password-based local authentication (`12345678`) that persists via `localStorage`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Quick Start
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
+3. Open `http://localhost:5173` in your browser.
+4. Enter password `12345678` to access the hub.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Deployment (Firebase)
+This app is currently configured for deployment on Firebase Hosting.
+1. Build the production bundle:
+   ```bash
+   npm run build
+   ```
+2. Deploy to Firebase:
+   ```bash
+   npx firebase deploy
+   ```
+The live site is available at: [https://family-trip-e19ea.web.app](https://family-trip-e19ea.web.app)
