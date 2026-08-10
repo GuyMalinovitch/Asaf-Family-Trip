@@ -10,8 +10,9 @@ const timeToMins = (timeStr) => {
 };
 
 export default function Itinerary() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const itineraryData = t('itineraryData', { returnObjects: true });
+  const isEn = i18n.language === 'en';
   
   const [dbEvents, setDbEvents] = useState([]);
   const [activeDayId, setActiveDayId] = useState(itineraryData[0].id);
@@ -19,7 +20,10 @@ export default function Itinerary() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [newEvent, setNewEvent] = useState({ time: '12:00', endTime: '13:00', title: '', description: '', icon: '🌟', mapQuery: '' });
+  const [newEvent, setNewEvent] = useState({ 
+    time: '12:00', endTime: '13:00', title: '', titleEn: '', 
+    description: '', descriptionEn: '', icon: '🌟', mapQuery: '' 
+  });
 
   // Current time for the red line
   const [now, setNow] = useState(new Date());
@@ -71,7 +75,10 @@ export default function Itinerary() {
       
       setIsAdding(false);
       setEditingId(null);
-      setNewEvent({ time: '12:00', endTime: '13:00', title: '', description: '', icon: '🌟', mapQuery: '' });
+      setNewEvent({ 
+        time: '12:00', endTime: '13:00', title: '', titleEn: '', 
+        description: '', descriptionEn: '', icon: '🌟', mapQuery: '' 
+      });
     } catch (error) {
       console.error("Error saving event:", error);
     }
@@ -82,7 +89,9 @@ export default function Itinerary() {
       time: ev.time || '12:00',
       endTime: ev.endTime || '13:00',
       title: ev.title || '',
+      titleEn: ev.titleEn || '',
       description: ev.description || '',
+      descriptionEn: ev.descriptionEn || '',
       icon: ev.icon || '🌟',
       mapQuery: ev.mapQuery || ''
     });
@@ -193,27 +202,32 @@ export default function Itinerary() {
         {viewMode === 'feed' ? (
           /* FEED VIEW */
           <div>
-            {activeDay.events.map((event, index) => (
-              <div 
-                key={event.id} 
-                style={{ display: 'flex', marginBottom: '20px', cursor: 'pointer' }}
-                onClick={() => setSelectedEvent(event)}
-              >
-                <div style={{ width: '55px', fontSize: '0.9rem', color: '#666', fontWeight: 'bold', textAlign: 'right', paddingRight: '15px', paddingTop: '5px' }}>
-                  {event.time}
-                </div>
-                <div style={{ 
-                  flex: 1, background: 'rgba(255,255,255,0.85)', borderLeft: '4px solid var(--primary)', 
-                  padding: '15px', borderRadius: '0 12px 12px 0', boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                    <span style={{ fontSize: '1.3rem' }}>{event.icon}</span>
-                    <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#222' }}>{event.title}</h4>
+            {activeDay.events.map((event, index) => {
+              const displayTitle = isEn && event.titleEn ? event.titleEn : event.title;
+              const displayDesc = isEn && event.descriptionEn ? event.descriptionEn : event.description;
+              
+              return (
+                <div 
+                  key={event.id} 
+                  style={{ display: 'flex', marginBottom: '20px', cursor: 'pointer' }}
+                  onClick={() => setSelectedEvent(event)}
+                >
+                  <div style={{ width: '55px', fontSize: '0.9rem', color: '#666', fontWeight: 'bold', textAlign: 'right', paddingRight: '15px', paddingTop: '5px' }}>
+                    {event.time}
                   </div>
-                  <p style={{ margin: 0, fontSize: '0.95rem', color: '#555', lineHeight: '1.4' }}>{event.description}</p>
+                  <div style={{ 
+                    flex: 1, background: 'rgba(255,255,255,0.85)', borderLeft: '4px solid var(--primary)', 
+                    padding: '15px', borderRadius: '0 12px 12px 0', boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                      <span style={{ fontSize: '1.3rem' }}>{event.icon}</span>
+                      <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#222' }}>{displayTitle}</h4>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.95rem', color: '#555', lineHeight: '1.4' }}>{displayDesc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           /* OUTLOOK/GOOGLE CALENDAR VIEW */
@@ -272,6 +286,7 @@ export default function Itinerary() {
 
                 const widthPct = 100 / ev.overlapCount;
                 const leftOffset = ev.overlapIndex * widthPct;
+                const displayTitle = isEn && ev.titleEn ? ev.titleEn : ev.title;
 
                 return (
                   <div 
@@ -301,7 +316,7 @@ export default function Itinerary() {
                       <div style={{ fontSize: '0.75rem', fontWeight: 'bold', marginBottom: '2px' }}>
                         {ev.time} {ev.icon}
                       </div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 'bold', lineHeight: '1.2' }}>{ev.title}</div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 'bold', lineHeight: '1.2' }}>{displayTitle}</div>
                     </div>
                   </div>
                 );
@@ -334,8 +349,14 @@ export default function Itinerary() {
               </div>
               <input required type="text" placeholder={t('itinerary.modalTitle')} className="glass-input" style={{ padding: '10px' }}
                 value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} />
-              <textarea placeholder={t('itinerary.modalDesc')} className="glass-input" style={{ padding: '10px', minHeight: '80px', resize: 'vertical' }}
+              <input type="text" placeholder="Title (English)" className="glass-input" style={{ padding: '10px' }}
+                value={newEvent.titleEn} onChange={e => setNewEvent({...newEvent, titleEn: e.target.value})} />
+                
+              <textarea placeholder={t('itinerary.modalDesc')} className="glass-input" style={{ padding: '10px', minHeight: '60px', resize: 'vertical' }}
                 value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})} />
+              <textarea placeholder="Description (English)" className="glass-input" style={{ padding: '10px', minHeight: '60px', resize: 'vertical' }}
+                value={newEvent.descriptionEn} onChange={e => setNewEvent({...newEvent, descriptionEn: e.target.value})} />
+                
               <input type="text" placeholder="Map Location (e.g. Gozsdu Court)" className="glass-input" style={{ padding: '10px' }}
                 value={newEvent.mapQuery} onChange={e => setNewEvent({...newEvent, mapQuery: e.target.value})} />
               
@@ -349,33 +370,37 @@ export default function Itinerary() {
       )}
 
       {/* Event Details Popup */}
-      {selectedEvent && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
-        }} onClick={() => setSelectedEvent(null)}>
-          <div 
-            className="glass-panel animate-fade-in" 
-            style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', position: 'relative' }}
-            onClick={e => e.stopPropagation()} // prevent closing when clicking inside panel
-          >
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '15px' }}>
-              <div style={{ fontSize: '3rem', background: '#f5f6fa', borderRadius: '15px', width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {selectedEvent.icon}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '3px' }}>
-                  {selectedEvent.time} {selectedEvent.endTime && `- ${selectedEvent.endTime}`}
+      {selectedEvent && (() => {
+        const displayTitle = isEn && selectedEvent.titleEn ? selectedEvent.titleEn : selectedEvent.title;
+        const displayDesc = isEn && selectedEvent.descriptionEn ? selectedEvent.descriptionEn : selectedEvent.description;
+
+        return (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+          }} onClick={() => setSelectedEvent(null)}>
+            <div 
+              className="glass-panel animate-fade-in" 
+              style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', position: 'relative' }}
+              onClick={e => e.stopPropagation()} // prevent closing when clicking inside panel
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '15px' }}>
+                <div style={{ fontSize: '3rem', background: '#f5f6fa', borderRadius: '15px', width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {selectedEvent.icon}
                 </div>
-                <h3 style={{ margin: '0', fontSize: '1.4rem', color: '#222', lineHeight: '1.2' }}>{selectedEvent.title}</h3>
+                <div style={{ flex: 1 }}>
+                  <div style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '3px' }}>
+                    {selectedEvent.time} {selectedEvent.endTime && `- ${selectedEvent.endTime}`}
+                  </div>
+                  <h3 style={{ margin: '0', fontSize: '1.4rem', color: '#222', lineHeight: '1.2' }}>{displayTitle}</h3>
+                </div>
               </div>
-            </div>
-            
-            {selectedEvent.description && (
-              <p style={{ margin: '0 0 20px 0', color: '#555', fontSize: '1rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
-                {selectedEvent.description}
-              </p>
-            )}
+              
+              {displayDesc && (
+                <p style={{ margin: '0 0 20px 0', color: '#555', fontSize: '1rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                  {displayDesc}
+                </p>
+              )}
 
             {selectedEvent.mapQuery && (
               <a 
@@ -409,7 +434,8 @@ export default function Itinerary() {
             )}
           </div>
         </div>
-      )}
+        );
+      })}
 
       {/* Floating Action Button */}
       <button 
