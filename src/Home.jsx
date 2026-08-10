@@ -77,7 +77,7 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=47.4979,49.0833&longitude=19.0402,19.6167&daily=weather_code,temperature_2m_max&timezone=Europe%2FBudapest&forecast_days=16')
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=47.4979,49.0833&longitude=19.0402,19.6167&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FBudapest&forecast_days=16')
       .then(res => res.json())
       .then(data => {
         const combined = tripDays.map(day => {
@@ -87,14 +87,16 @@ export default function Home() {
           if (dateIndex !== -1) {
             return {
               ...day,
-              temp: `${Math.round(apiLocData.daily.temperature_2m_max[dateIndex])}°`,
+              tempMax: `${Math.round(apiLocData.daily.temperature_2m_max[dateIndex])}°`,
+              tempMin: `${Math.round(apiLocData.daily.temperature_2m_min[dateIndex])}°`,
               icon: getWeatherIcon(apiLocData.daily.weather_code[dateIndex]),
               isLive: true
             };
           } else {
             return {
               ...day,
-              temp: day.loc === 'Budapest' ? '25°' : '22°',
+              tempMax: day.loc === 'Budapest' ? '25°' : '22°',
+              tempMin: day.loc === 'Budapest' ? '18°' : '14°',
               icon: '⛅',
               isLive: false
             };
@@ -171,7 +173,9 @@ export default function Home() {
                 )}
                 <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#555' }}>{t(`home.weatherDays.${f.date}`)}</span>
                 <span style={{ fontSize: '1.8rem' }}>{f.icon}</span>
-                <span style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-dark)' }}>{f.temp}</span>
+                <span style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--text-dark)' }}>
+                  {f.tempMax} <span style={{ color: '#999', fontSize: '0.85rem' }}>{f.tempMin}</span>
+                </span>
                 <span style={{ fontSize: '0.7rem', color: '#777', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold' }}>{t(`home.weatherLocs.${f.loc}`)}</span>
               </div>
             ))}

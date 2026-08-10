@@ -18,6 +18,7 @@ export default function Itinerary() {
   const [viewMode, setViewMode] = useState('calendar'); // 'feed' | 'calendar'
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [newEvent, setNewEvent] = useState({ time: '12:00', endTime: '13:00', title: '', description: '', icon: '🌟', mapQuery: '' });
 
   // Current time for the red line
@@ -86,12 +87,14 @@ export default function Itinerary() {
       mapQuery: ev.mapQuery || ''
     });
     setEditingId(ev.firebaseId);
+    setSelectedEvent(null); // close details modal
     setIsAdding(true);
   };
 
   const handleDeleteEvent = async (firebaseId) => {
     if (window.confirm("Delete this event?")) {
       await deleteDoc(doc(db, 'itinerary_events', firebaseId));
+      setSelectedEvent(null);
     }
   };
 
@@ -191,7 +194,11 @@ export default function Itinerary() {
           /* FEED VIEW */
           <div>
             {activeDay.events.map((event, index) => (
-              <div key={event.id} style={{ display: 'flex', marginBottom: '20px' }}>
+              <div 
+                key={event.id} 
+                style={{ display: 'flex', marginBottom: '20px', cursor: 'pointer' }}
+                onClick={() => setSelectedEvent(event)}
+              >
                 <div style={{ width: '55px', fontSize: '0.9rem', color: '#666', fontWeight: 'bold', textAlign: 'right', paddingRight: '15px', paddingTop: '5px' }}>
                   {event.time}
                 </div>
@@ -199,43 +206,11 @@ export default function Itinerary() {
                   flex: 1, background: 'rgba(255,255,255,0.85)', borderLeft: '4px solid var(--primary)', 
                   padding: '15px', borderRadius: '0 12px 12px 0', boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '5px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '1.3rem' }}>{event.icon}</span>
-                      <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#222' }}>{event.title}</h4>
-                    </div>
-                    {event.firebaseId && (
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <button 
-                          onClick={() => handleEditEvent(event)}
-                          style={{ background: 'transparent', border: 'none', color: '#3498db', cursor: 'pointer', fontSize: '1.1rem', padding: 0 }}
-                        >
-                          ✏️
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteEvent(event.firebaseId)}
-                          style={{ background: 'transparent', border: 'none', color: '#ff4757', cursor: 'pointer', fontSize: '1.1rem', padding: 0 }}
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                    <span style={{ fontSize: '1.3rem' }}>{event.icon}</span>
+                    <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#222' }}>{event.title}</h4>
                   </div>
                   <p style={{ margin: 0, fontSize: '0.95rem', color: '#555', lineHeight: '1.4' }}>{event.description}</p>
-                  
-                  {event.mapQuery && (
-                    <a 
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.mapQuery)}`}
-                      target="_blank" rel="noreferrer"
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '5px',
-                        marginTop: '10px', fontSize: '0.85rem', color: 'var(--primary)',
-                        textDecoration: 'none', fontWeight: 'bold'
-                      }}
-                    >
-                      📍 {t('guidebook.openMaps') || 'Open in Maps'}
-                    </a>
-                  )}
                 </div>
               </div>
             ))}
@@ -299,15 +274,20 @@ export default function Itinerary() {
                 const leftOffset = ev.overlapIndex * widthPct;
 
                 return (
-                  <div key={ev.id} style={{
-                    position: 'absolute',
-                    top: `${top}px`,
-                    height: `${height}px`,
-                    insetInlineStart: `calc(50px + ${leftOffset}%)`, // offset by the time column width (50px)
-                    width: `calc(100% - 50px)`,
-                    maxWidth: `${widthPct}%`,
-                    padding: '2px' // spacing between overlapping events
-                  }}>
+                  <div 
+                    key={ev.id} 
+                    onClick={() => setSelectedEvent(ev)}
+                    style={{
+                      position: 'absolute',
+                      top: `${top}px`,
+                      height: `${height}px`,
+                      insetInlineStart: `calc(50px + ${leftOffset}%)`, // offset by the time column width (50px)
+                      width: `calc(100% - 50px)`,
+                      maxWidth: `${widthPct}%`,
+                      padding: '2px', // spacing between overlapping events
+                      cursor: 'pointer'
+                    }}
+                  >
                     <div style={{
                       background: 'var(--primary)',
                       color: 'white',
@@ -364,6 +344,69 @@ export default function Itinerary() {
                 <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>{editingId ? 'Save' : t('itinerary.add')}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Event Details Popup */}
+      {selectedEvent && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }} onClick={() => setSelectedEvent(null)}>
+          <div 
+            className="glass-panel animate-fade-in" 
+            style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', position: 'relative' }}
+            onClick={e => e.stopPropagation()} // prevent closing when clicking inside panel
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '15px' }}>
+              <div style={{ fontSize: '3rem', background: '#f5f6fa', borderRadius: '15px', width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {selectedEvent.icon}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '3px' }}>
+                  {selectedEvent.time} {selectedEvent.endTime && `- ${selectedEvent.endTime}`}
+                </div>
+                <h3 style={{ margin: '0', fontSize: '1.4rem', color: '#222', lineHeight: '1.2' }}>{selectedEvent.title}</h3>
+              </div>
+            </div>
+            
+            {selectedEvent.description && (
+              <p style={{ margin: '0 0 20px 0', color: '#555', fontSize: '1rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                {selectedEvent.description}
+              </p>
+            )}
+
+            {selectedEvent.mapQuery && (
+              <a 
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedEvent.mapQuery)}`}
+                target="_blank" rel="noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  padding: '12px', background: 'rgba(0, 198, 255, 0.1)', color: 'var(--primary)',
+                  borderRadius: '12px', textDecoration: 'none', fontWeight: 'bold', marginBottom: '20px'
+                }}
+              >
+                📍 {t('guidebook.openMaps') || 'Open in Google Maps'}
+              </a>
+            )}
+
+            {selectedEvent.firebaseId && (
+              <div style={{ display: 'flex', gap: '10px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+                <button 
+                  onClick={() => handleEditEvent(selectedEvent)}
+                  style={{ flex: 1, padding: '10px', borderRadius: '12px', background: '#f1f2f6', border: 'none', color: '#2f3542', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  ✏️ Edit
+                </button>
+                <button 
+                  onClick={() => handleDeleteEvent(selectedEvent.firebaseId)}
+                  style={{ flex: 1, padding: '10px', borderRadius: '12px', background: 'rgba(255, 71, 87, 0.1)', border: 'none', color: '#ff4757', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  🗑️ Delete
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
