@@ -32,6 +32,13 @@ const getItinerary = (lang) => {
       ]
     },
     {
+      id: 'day-2',
+      date: isHe ? '21 באוגוסט' : 'Aug 21',
+      title: isHe ? 'יום חופשי בבודפשט' : 'Free day in Budapest',
+      location: isHe ? 'בודפשט, הונגריה' : 'Budapest, Hungary',
+      events: []
+    },
+    {
       id: 'day-3',
       date: isHe ? '22 באוגוסט' : 'Aug 22',
       title: isHe ? 'נסיעה לסלובקיה' : 'Roadtrip to Slovakia',
@@ -50,6 +57,41 @@ const getItinerary = (lang) => {
           icon: '🎢'
         }
       ]
+    },
+    {
+      id: 'day-4',
+      date: isHe ? '23 באוגוסט' : 'Aug 23',
+      title: isHe ? 'פארק המים' : 'Water Park',
+      location: isHe ? 'סלובקיה' : 'Slovakia',
+      events: []
+    },
+    {
+      id: 'day-5',
+      date: isHe ? '24 באוגוסט' : 'Aug 24',
+      title: isHe ? 'טיולים בסביבה' : 'Exploring the area',
+      location: isHe ? 'סלובקיה' : 'Slovakia',
+      events: []
+    },
+    {
+      id: 'day-6',
+      date: isHe ? '25 באוגוסט' : 'Aug 25',
+      title: isHe ? 'פעילות משפחתית' : 'Family Activity',
+      location: isHe ? 'סלובקיה' : 'Slovakia',
+      events: []
+    },
+    {
+      id: 'day-7',
+      date: isHe ? '26 באוגוסט' : 'Aug 26',
+      title: isHe ? 'טיולים בסביבה' : 'Exploring the area',
+      location: isHe ? 'סלובקיה' : 'Slovakia',
+      events: []
+    },
+    {
+      id: 'day-8',
+      date: isHe ? '27 באוגוסט' : 'Aug 27',
+      title: isHe ? 'פעילות משפחתית' : 'Family Activity',
+      location: isHe ? 'סלובקיה' : 'Slovakia',
+      events: []
     },
     {
       id: 'day-9',
@@ -90,6 +132,11 @@ const resources = {
         title: 'Asaf Family Trip', subtitle: 'Budapest & Slovakia',
         forecastTitle: 'Trip Forecast', live: 'Live', est: 'Est', fetching: 'Fetching live forecast...',
         upNext: 'Up Next',
+        reportProblem: 'Report an Issue',
+        reportModalTitle: 'Report a Problem',
+        reportIssueTitle: 'Subject',
+        reportIssueDesc: 'Describe the problem or what\'s missing...',
+        cancel: 'Cancel', sendReport: 'Send Report', reporting: 'Sending...', reported: 'Reported!',
         weatherDays: { 'Aug 20': 'Aug 20', 'Aug 21': 'Aug 21', 'Aug 22': 'Aug 22', 'Aug 23': 'Aug 23', 'Aug 24': 'Aug 24', 'Aug 25': 'Aug 25', 'Aug 26': 'Aug 26', 'Aug 27': 'Aug 27', 'Aug 28': 'Aug 28', 'Aug 29': 'Aug 29' },
         weatherLocs: { 'Budapest': 'Bud', 'Slovakia': 'Slo' }
       },
@@ -129,6 +176,11 @@ const resources = {
         title: 'הטיול של משפחת אסף', subtitle: 'בודפשט וסלובקיה',
         forecastTitle: 'תחזית מזג אוויר', live: 'חי', est: 'הערכה', fetching: 'מוריד תחזית...',
         upNext: 'הבא בתור',
+        reportProblem: 'דווח על בעיה',
+        reportModalTitle: 'דיווח על בעיה',
+        reportIssueTitle: 'נושא',
+        reportIssueDesc: 'תאר את הבעיה או מה שחסר לך...',
+        cancel: 'ביטול', sendReport: 'שלח דיווח', reporting: 'שולח...', reported: 'נשלח!',
         weatherDays: { 'Aug 20': '20 באוג', 'Aug 21': '21 באוג', 'Aug 22': '22 באוג', 'Aug 23': '23 באוג', 'Aug 24': '24 באוג', 'Aug 25': '25 באוג', 'Aug 26': '26 באוג', 'Aug 27': '27 באוג', 'Aug 28': '28 באוג', 'Aug 29': '29 באוג' },
         weatherLocs: { 'Budapest': 'בוד', 'Slovakia': 'סלו' }
       },
