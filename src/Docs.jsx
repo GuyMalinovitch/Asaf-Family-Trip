@@ -1,15 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { db, storage } from './firebase';
+import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 export default function Docs() {
   const { t } = useTranslation();
-  const docsData = t('docsData', { returnObjects: true });
-  const [docs, setDocs] = useState(docsData);
+  const [docs, setDocs] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [newDoc, setNewDoc] = useState({ title: '', uploader: '', category: 'General' });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileInputRef = useRef(null);
 
-  const handleAddDoc = (e) => {
+  // Fetch docs from Firestore in real-time
+  useEffect(() => {
+    const q = query(collection(db, 'docs'), orderBy('timestamp', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const docsArr = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setDocs(docsArr);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleAddDoc = async (e) => {
     e.preventDefault();
+    if (!selectedFile) {
+      alert(t('docs.pleaseSelectFile') || 'Please select a file first!');
+      return;
+    }
+    
+    setIsUploading(true);
     
     // Assign a basic icon based on category
     let icon = '📄';
@@ -18,9 +39,55 @@ export default function Docs() {
     if (newDoc.category === 'Cars') icon = '🚗';
     if (newDoc.category === 'Insurance') icon = '🛡️';
 
-    setDocs([...docs, { ...newDoc, id: Date.now(), icon }]);
-    setIsAdding(false);
-    setNewDoc({ title: '', uploader: '', category: 'General' });
+    try {
+      // 1. Upload to Firebase Storage
+      const fileRef = ref(storage, `docs/${Date.now()}_${selectedFile.name}`);
+      await uploadBytes(fileRef, selectedFile);
+      const fileUrl = await getDownloadURL(fileRef);
+
+      // 2. Save metadata to Firestore
+      await addDoc(collection(db, 'docs'), {
+        ...newDoc,
+        icon,
+        fileUrl,
+        timestamp: serverTimestamp()
+      });
+
+      setIsAdding(false);
+      setNewDoc({ title: '', uploader: '', category: 'General' });
+      setSelectedFile(null);
+    } catch (error) {
+      console.error("Error uploading document:", error);
+      alert("Failed to upload document.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteDoc = async (docId, fileUrl) => {
+    if (!window.confirm(t('docs.confirmDelete') || 'Are you sure you want to delete this document?')) return;
+    
+    try {
+      // 1. Delete from Firestore
+      await deleteDoc(doc(db, 'docs', docId));
+      
+      // 2. Try to delete from Storage if fileUrl exists
+      if (fileUrl) {
+        // We need the original storage path to delete it.
+        // A hacky but effective way is to use refFromURL, but it's deprecated in newer SDKs.
+        // Let's just extract the path from the URL
+        const decodedUrl = decodeURIComponent(fileUrl);
+        const pathStart = decodedUrl.indexOf('/o/') + 3;
+        const pathEnd = decodedUrl.indexOf('?alt=media');
+        if (pathStart > 2 && pathEnd > pathStart) {
+          const filePath = decodedUrl.substring(pathStart, pathEnd);
+          const fileRef = ref(storage, filePath);
+          await deleteObject(fileRef);
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting document:", error);
+    }
   };
 
   return (
@@ -57,12 +124,28 @@ export default function Docs() {
                 <span>{doc.category}</span>
               </div>
             </div>
-            <button style={{ 
-              background: 'transparent', border: 'none', color: 'var(--primary)', 
-              fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer' 
-            }}>
-              ⬇️
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <a 
+                href={doc.fileUrl || '#'}
+                target="_blank"
+                rel="noreferrer"
+                title={t('docs.download') || 'Download'}
+                style={{ 
+                  background: 'transparent', border: 'none', color: 'var(--primary)', 
+                  fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer', textDecoration: 'none'
+                }}>
+                ⬇️
+              </a>
+              <button 
+                onClick={() => handleDeleteDoc(doc.id, doc.fileUrl)}
+                title={t('docs.delete') || 'Delete'}
+                style={{ 
+                  background: 'transparent', border: 'none', color: '#ff4757', 
+                  fontSize: '1.2rem', cursor: 'pointer', padding: 0
+                }}>
+                🗑️
+              </button>
+            </div>
           </div>
         ))}
         {docs.length === 0 ? (
@@ -95,14 +178,23 @@ export default function Docs() {
                 <option value="Insurance">{t('docs.cats.insurance')}</option>
               </select>
 
-              {/* Fake file input for UI purposes */}
-              <div style={{ padding: '20px', border: '2px dashed var(--primary)', borderRadius: '12px', textAlign: 'center', color: 'var(--primary)', cursor: 'pointer', background: 'rgba(0,198,255,0.05)' }}>
-                {t('docs.tapFile')}
+              <input 
+                type="file" 
+                ref={fileInputRef}
+                onChange={(e) => setSelectedFile(e.target.files[0])}
+                style={{ display: 'none' }}
+              />
+              <div 
+                onClick={() => fileInputRef.current.click()}
+                style={{ padding: '20px', border: '2px dashed var(--primary)', borderRadius: '12px', textAlign: 'center', color: 'var(--primary)', cursor: 'pointer', background: 'rgba(0,198,255,0.05)' }}>
+                {selectedFile ? selectedFile.name : t('docs.tapFile')}
               </div>
               
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button type="button" onClick={() => setIsAdding(false)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>{t('docs.cancel')}</button>
-                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>{t('docs.upload')}</button>
+                <button type="submit" disabled={isUploading} className="btn-primary" style={{ flex: 1, padding: '10px', opacity: isUploading ? 0.7 : 1 }}>
+                  {isUploading ? '...' : t('docs.upload')}
+                </button>
               </div>
             </form>
           </div>

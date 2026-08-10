@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { db } from './firebase';
+import { collection, addDoc, onSnapshot, query, doc, deleteDoc } from 'firebase/firestore';
 
 // Helper to convert "HH:mm" to minutes since 00:00
 const timeToMins = (timeStr) => {
@@ -11,32 +13,59 @@ export default function Itinerary() {
   const { t } = useTranslation();
   const itineraryData = t('itineraryData', { returnObjects: true });
   
-  const [data, setData] = useState(itineraryData);
+  const [dbEvents, setDbEvents] = useState([]);
   const [activeDayId, setActiveDayId] = useState(itineraryData[0].id);
   const [viewMode, setViewMode] = useState('calendar'); // 'feed' | 'calendar'
   const [isAdding, setIsAdding] = useState(false);
-  
-  // New event form state
   const [newEvent, setNewEvent] = useState({ time: '12:00', duration: 60, title: '', description: '', icon: '🌟' });
 
-  const activeDay = data.find(d => d.id === activeDayId);
-  const activeDayIndex = data.findIndex(d => d.id === activeDayId);
-
-  const handleAddEvent = (e) => {
-    e.preventDefault();
-    const updatedData = [...data];
-    updatedData[activeDayIndex].events.push({
-      ...newEvent,
-      id: 'e' + Date.now(),
-      duration: Number(newEvent.duration)
+  // Fetch custom events from Firestore
+  useEffect(() => {
+    const q = query(collection(db, 'itinerary_events'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const events = snapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
+      setDbEvents(events);
     });
-    
-    // Sort events by time
-    updatedData[activeDayIndex].events.sort((a, b) => timeToMins(a.time) - timeToMins(b.time));
-    
-    setData(updatedData);
-    setIsAdding(false);
-    setNewEvent({ time: '12:00', duration: 60, title: '', description: '', icon: '🌟' });
+    return () => unsubscribe();
+  }, []);
+
+  // Merge hardcoded events with db events
+  const data = useMemo(() => {
+    const merged = JSON.parse(JSON.stringify(itineraryData)); // Deep copy
+    merged.forEach(day => {
+      const dayDbEvents = dbEvents.filter(ev => ev.dayId === day.id);
+      day.events = [...day.events, ...dayDbEvents];
+      day.events.sort((a, b) => timeToMins(a.time) - timeToMins(b.time));
+    });
+    return merged;
+  }, [itineraryData, dbEvents]);
+
+  const activeDay = data.find(d => d.id === activeDayId);
+
+  const handleAddEvent = async (e) => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(db, 'itinerary_events'), {
+        ...newEvent,
+        id: 'e' + Date.now(),
+        duration: Number(newEvent.duration),
+        dayId: activeDayId
+      });
+      setIsAdding(false);
+      setNewEvent({ time: '12:00', duration: 60, title: '', description: '', icon: '🌟' });
+    } catch (error) {
+      console.error("Error adding event:", error);
+    }
+  };
+
+  const handleDeleteEvent = async (firebaseId) => {
+    if (!firebaseId) {
+      alert("This is a mock event. You can remove it permanently by editing i18n.js!");
+      return;
+    }
+    if (window.confirm("Delete this event?")) {
+      await deleteDoc(doc(db, 'itinerary_events', firebaseId));
+    }
   };
 
   // Calendar View Constants
@@ -143,9 +172,19 @@ export default function Itinerary() {
                   flex: 1, background: 'rgba(255,255,255,0.85)', borderLeft: '4px solid var(--primary)', 
                   padding: '15px', borderRadius: '0 12px 12px 0', boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                    <span style={{ fontSize: '1.3rem' }}>{event.icon}</span>
-                    <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#222' }}>{event.title}</h4>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '5px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '1.3rem' }}>{event.icon}</span>
+                      <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#222' }}>{event.title}</h4>
+                    </div>
+                    {event.firebaseId && (
+                      <button 
+                        onClick={() => handleDeleteEvent(event.firebaseId)}
+                        style={{ background: 'transparent', border: 'none', color: '#ff4757', cursor: 'pointer' }}
+                      >
+                        🗑️
+                      </button>
+                    )}
                   </div>
                   <p style={{ margin: 0, fontSize: '0.95rem', color: '#555', lineHeight: '1.4' }}>{event.description}</p>
                 </div>
