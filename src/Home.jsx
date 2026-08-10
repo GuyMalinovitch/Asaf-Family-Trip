@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { db } from './firebase';
+import { collection, addDoc, onSnapshot, query, serverTimestamp } from 'firebase/firestore';
 
 // WMO Weather Code to Emoji map
 const getWeatherIcon = (code) => {
@@ -17,7 +19,46 @@ const getWeatherIcon = (code) => {
 export default function Home() { 
   const [liveForecast, setLiveForecast] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [issueTitle, setIssueTitle] = useState('');
+  const [issueDesc, setIssueDesc] = useState('');
+  const [reportStatus, setReportStatus] = useState('idle'); // 'idle' | 'reporting' | 'reported'
+  const [dbEvents, setDbEvents] = useState([]);
   const { t } = useTranslation();
+
+  // Fetch custom events from Firestore for 'Up Next'
+  useEffect(() => {
+    const q = query(collection(db, 'itinerary_events'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const events = snapshot.docs.map(doc => ({ firebaseId: doc.id, ...doc.data() }));
+      setDbEvents(events);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Submission to Firestore backend
+  const handleSendReport = async () => {
+    if (!issueTitle) return;
+    setReportStatus('reporting');
+    try {
+      await addDoc(collection(db, 'reports'), {
+        title: issueTitle,
+        description: issueDesc,
+        timestamp: serverTimestamp()
+      });
+      setReportStatus('reported');
+      // Reset after a short delay
+      setTimeout(() => {
+        setShowReportModal(false);
+        setReportStatus('idle');
+        setIssueTitle('');
+        setIssueDesc('');
+      }, 1500);
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      setReportStatus('idle');
+    }
+  };
 
   const itineraryData = t('itineraryData', { returnObjects: true });
 
@@ -68,7 +109,22 @@ export default function Home() {
       });
   }, []);
 
-  const nextEvent = itineraryData && itineraryData[0] ? itineraryData[0].events[0] : null;
+  const nextEvent = useMemo(() => {
+    if (!dbEvents || dbEvents.length === 0) return null;
+    
+    // Sort events by dayId, then time
+    const sorted = [...dbEvents].sort((a, b) => {
+      const dayA = parseInt(a.dayId.split('-')[1]) || 0;
+      const dayB = parseInt(b.dayId.split('-')[1]) || 0;
+      if (dayA !== dayB) return dayA - dayB;
+      
+      const timeA = parseInt(a.time.replace(':', '')) || 0;
+      const timeB = parseInt(b.time.replace(':', '')) || 0;
+      return timeA - timeB;
+    });
+    
+    return sorted[0];
+  }, [dbEvents]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '40px' }}>
@@ -134,12 +190,82 @@ export default function Home() {
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
               <span style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem' }}>{nextEvent.time}</span>
-              <span style={{ color: '#999', fontSize: '0.8rem' }}>{nextEvent.date}</span>
+              <span style={{ color: '#999', fontSize: '0.8rem' }}>{t(`home.weatherDays.Aug ${19 + parseInt(nextEvent.dayId.split('-')[1])}`)}</span>
             </div>
             <h3 style={{ margin: '0 0 5px 0', fontSize: '1.1rem' }}>{nextEvent.title}</h3>
             <p style={{ margin: 0, color: '#666', fontSize: '0.9rem', lineHeight: '1.4' }}>
               {nextEvent.description}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Report a Problem Button */}
+      <div style={{ marginTop: '30px', textAlign: 'center' }}>
+        <button 
+          onClick={() => setShowReportModal(true)}
+          style={{ 
+            background: 'rgba(255, 71, 87, 0.1)', border: '1px solid rgba(255, 71, 87, 0.3)', color: '#ff4757',
+            padding: '14px 28px', borderRadius: '30px', fontSize: '1.1rem', cursor: 'pointer', fontWeight: 'bold',
+            transition: 'all 0.2s ease', width: '100%', maxWidth: '300px', boxShadow: '0 4px 15px rgba(255, 71, 87, 0.15)'
+          }}
+          onMouseOver={e => e.currentTarget.style.background = 'rgba(255, 71, 87, 0.2)'}
+          onMouseOut={e => e.currentTarget.style.background = 'rgba(255, 71, 87, 0.1)'}
+        >
+          🐛 {t('home.reportProblem')}
+        </button>
+      </div>
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }}>
+          <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)' }}>
+            <h3 style={{ margin: '0 0 15px 0', fontSize: '1.2rem', color: '#333' }}>{t('home.reportModalTitle')}</h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <input 
+                type="text" 
+                placeholder={t('home.reportIssueTitle')} 
+                className="glass-input" 
+                style={{ padding: '12px' }}
+                value={issueTitle} 
+                onChange={e => setIssueTitle(e.target.value)} 
+              />
+              <textarea 
+                placeholder={t('home.reportIssueDesc')} 
+                className="glass-input" 
+                style={{ padding: '12px', minHeight: '100px', resize: 'vertical' }}
+                value={issueDesc} 
+                onChange={e => setIssueDesc(e.target.value)} 
+              />
+              
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <button 
+                  onClick={() => setShowReportModal(false)} 
+                  style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  {t('home.cancel')}
+                </button>
+                <button 
+                  onClick={handleSendReport}
+                  disabled={reportStatus !== 'idle'}
+                  className="btn-primary" 
+                  style={{ 
+                    flex: 1, padding: '12px', 
+                    opacity: reportStatus !== 'idle' ? 0.7 : 1,
+                    cursor: reportStatus !== 'idle' ? 'default' : 'pointer',
+                    background: reportStatus === 'reported' ? '#2ecc71' : 'var(--primary)'
+                  }}
+                >
+                  {reportStatus === 'idle' && t('home.sendReport')}
+                  {reportStatus === 'reporting' && t('home.reporting')}
+                  {reportStatus === 'reported' && t('home.reported')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

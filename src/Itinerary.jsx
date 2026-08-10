@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db } from './firebase';
-import { collection, addDoc, onSnapshot, query, doc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, onSnapshot, query, doc, deleteDoc } from 'firebase/firestore';
 
 // Helper to convert "HH:mm" to minutes since 00:00
 const timeToMins = (timeStr) => {
@@ -17,7 +17,15 @@ export default function Itinerary() {
   const [activeDayId, setActiveDayId] = useState(itineraryData[0].id);
   const [viewMode, setViewMode] = useState('calendar'); // 'feed' | 'calendar'
   const [isAdding, setIsAdding] = useState(false);
-  const [newEvent, setNewEvent] = useState({ time: '12:00', duration: 60, title: '', description: '', icon: '🌟' });
+  const [editingId, setEditingId] = useState(null);
+  const [newEvent, setNewEvent] = useState({ time: '12:00', endTime: '13:00', title: '', description: '', icon: '🌟', mapQuery: '' });
+
+  // Current time for the red line
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60000); // update every minute
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch custom events from Firestore
   useEffect(() => {
@@ -34,7 +42,11 @@ export default function Itinerary() {
     const merged = JSON.parse(JSON.stringify(itineraryData)); // Deep copy
     merged.forEach(day => {
       const dayDbEvents = dbEvents.filter(ev => ev.dayId === day.id);
-      day.events = [...day.events, ...dayDbEvents];
+      day.events = [...day.events, ...dayDbEvents].map(ev => ({
+        ...ev,
+        // compute duration if not present
+        duration: ev.duration || (timeToMins(ev.endTime) - timeToMins(ev.time))
+      }));
       day.events.sort((a, b) => timeToMins(a.time) - timeToMins(b.time));
     });
     return merged;
@@ -45,17 +57,36 @@ export default function Itinerary() {
   const handleAddEvent = async (e) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, 'itinerary_events'), {
+      const payload = {
         ...newEvent,
-        id: 'e' + Date.now(),
-        duration: Number(newEvent.duration),
         dayId: activeDayId
-      });
+      };
+      
+      if (editingId) {
+        await updateDoc(doc(db, 'itinerary_events', editingId), payload);
+      } else {
+        await addDoc(collection(db, 'itinerary_events'), payload);
+      }
+      
       setIsAdding(false);
-      setNewEvent({ time: '12:00', duration: 60, title: '', description: '', icon: '🌟' });
+      setEditingId(null);
+      setNewEvent({ time: '12:00', endTime: '13:00', title: '', description: '', icon: '🌟', mapQuery: '' });
     } catch (error) {
-      console.error("Error adding event:", error);
+      console.error("Error saving event:", error);
     }
+  };
+
+  const handleEditEvent = (ev) => {
+    setNewEvent({
+      time: ev.time || '12:00',
+      endTime: ev.endTime || '13:00',
+      title: ev.title || '',
+      description: ev.description || '',
+      icon: ev.icon || '🌟',
+      mapQuery: ev.mapQuery || ''
+    });
+    setEditingId(ev.firebaseId);
+    setIsAdding(true);
   };
 
   const handleDeleteEvent = async (firebaseId) => {
@@ -174,15 +205,37 @@ export default function Itinerary() {
                       <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#222' }}>{event.title}</h4>
                     </div>
                     {event.firebaseId && (
-                      <button 
-                        onClick={() => handleDeleteEvent(event.firebaseId)}
-                        style={{ background: 'transparent', border: 'none', color: '#ff4757', cursor: 'pointer' }}
-                      >
-                        🗑️
-                      </button>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button 
+                          onClick={() => handleEditEvent(event)}
+                          style={{ background: 'transparent', border: 'none', color: '#3498db', cursor: 'pointer', fontSize: '1.1rem', padding: 0 }}
+                        >
+                          ✏️
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteEvent(event.firebaseId)}
+                          style={{ background: 'transparent', border: 'none', color: '#ff4757', cursor: 'pointer', fontSize: '1.1rem', padding: 0 }}
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     )}
                   </div>
                   <p style={{ margin: 0, fontSize: '0.95rem', color: '#555', lineHeight: '1.4' }}>{event.description}</p>
+                  
+                  {event.mapQuery && (
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.mapQuery)}`}
+                      target="_blank" rel="noreferrer"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '5px',
+                        marginTop: '10px', fontSize: '0.85rem', color: 'var(--primary)',
+                        textDecoration: 'none', fontWeight: 'bold'
+                      }}
+                    >
+                      📍 {t('guidebook.openMaps') || 'Open in Maps'}
+                    </a>
+                  )}
                 </div>
               </div>
             ))}
@@ -211,6 +264,26 @@ export default function Itinerary() {
                   </div>
                 </div>
               ))}
+
+              {/* Red Time Line */}
+              {(() => {
+                const currentHour = now.getHours() + now.getMinutes() / 60;
+                if (currentHour >= CAL_START_HOUR && currentHour <= CAL_END_HOUR) {
+                  const top = (currentHour - CAL_START_HOUR) * HOUR_HEIGHT;
+                  return (
+                    <div style={{
+                      position: 'absolute', top: `${top}px`, left: '45px', right: 0,
+                      height: '2px', background: '#ff4757', zIndex: 10, pointerEvents: 'none'
+                    }}>
+                      <div style={{
+                        position: 'absolute', top: '-4px', left: '-5px', width: '10px', height: '10px',
+                        background: '#ff4757', borderRadius: '50%'
+                      }} />
+                    </div>
+                  );
+                }
+                return null;
+              })()}
 
               {/* Plotted Events */}
               {getCalendarEvents().map((ev) => {
@@ -258,28 +331,37 @@ export default function Itinerary() {
         )}
       </div>
 
-      {/* Add Event Form Modal */}
+      {/* Add/Edit Event Form Modal */}
       {isAdding && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
         }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)' }}>
-            <h3 style={{ margin: '0 0 15px 0' }}>{t('itinerary.addEvent')} {activeDay.date}</h3>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', overflowY: 'auto', maxHeight: '90vh' }}>
+            <h3 style={{ margin: '0 0 15px 0' }}>{editingId ? 'Edit Event' : t('itinerary.addEvent') + ' ' + activeDay.date}</h3>
             <form onSubmit={handleAddEvent} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <input required type="time" className="glass-input" style={{ padding: '10px', flex: 1 }}
-                  value={newEvent.time} onChange={e => setNewEvent({...newEvent, time: e.target.value})} />
-                <input required type="number" placeholder="Min" className="glass-input" style={{ padding: '10px', flex: 1 }}
-                  value={newEvent.duration} onChange={e => setNewEvent({...newEvent, duration: e.target.value})} />
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold' }}>Start Time</label>
+                  <input required type="time" className="glass-input" style={{ padding: '10px' }}
+                    value={newEvent.time} onChange={e => setNewEvent({...newEvent, time: e.target.value})} />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold' }}>End Time</label>
+                  <input required type="time" className="glass-input" style={{ padding: '10px' }}
+                    value={newEvent.endTime} onChange={e => setNewEvent({...newEvent, endTime: e.target.value})} />
+                </div>
               </div>
               <input required type="text" placeholder={t('itinerary.modalTitle')} className="glass-input" style={{ padding: '10px' }}
                 value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} />
-              <textarea placeholder={t('itinerary.modalDesc')} className="glass-input" style={{ padding: '10px', minHeight: '80px', resize: 'none' }}
+              <textarea placeholder={t('itinerary.modalDesc')} className="glass-input" style={{ padding: '10px', minHeight: '80px', resize: 'vertical' }}
                 value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})} />
+              <input type="text" placeholder="Map Location (e.g. Gozsdu Court)" className="glass-input" style={{ padding: '10px' }}
+                value={newEvent.mapQuery} onChange={e => setNewEvent({...newEvent, mapQuery: e.target.value})} />
+              
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="button" onClick={() => setIsAdding(false)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>{t('itinerary.cancel')}</button>
-                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>{t('itinerary.add')}</button>
+                <button type="button" onClick={() => { setIsAdding(false); setEditingId(null); }} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>{t('itinerary.cancel')}</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>{editingId ? 'Save' : t('itinerary.add')}</button>
               </div>
             </form>
           </div>
