@@ -59,10 +59,6 @@ export default function Itinerary() {
   };
 
   const handleDeleteEvent = async (firebaseId) => {
-    if (!firebaseId) {
-      alert("This is a mock event. You can remove it permanently by editing i18n.js!");
-      return;
-    }
     if (window.confirm("Delete this event?")) {
       await deleteDoc(doc(db, 'itinerary_events', firebaseId));
     }

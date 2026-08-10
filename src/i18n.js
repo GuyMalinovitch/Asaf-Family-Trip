@@ -10,26 +10,7 @@ const getItinerary = (lang) => {
       date: isHe ? '20 באוגוסט' : 'Aug 20',
       title: isHe ? 'הגעה לבודפשט' : 'Arrival in Budapest',
       location: isHe ? 'בודפשט, הונגריה' : 'Budapest, Hungary',
-      events: [
-        {
-          id: 'e1', time: '10:10', duration: 150,
-          title: isHe ? 'טיסת W62508 (תל אביב ➡️ בודפשט)' : 'Flight W62508 (TLV ➡️ BUD)',
-          description: isHe ? 'טיסת וויזאייר יוצאת מנתב"ג (טרמינל 3) ב-10:10, נוחתת בבודפשט (טרמינל 2B) ב-12:40. אישור: JI5ZUV' : 'Wizz Air flight departing TLV (Terminal 3) at 10:10, arriving at Budapest BUD (Terminal 2B) at 12:40. Confirmation: JI5ZUV',
-          icon: '✈️'
-        },
-        {
-          id: 'e2', time: '14:00', duration: 90,
-          title: isHe ? 'צ\'ק-אין: Gozsdu Court Budapest' : 'Check-in: Gozsdu Court Budapest',
-          description: isHe ? 'כניסה למלון ל-2 לילות! הוזמנו 3 חדרים ל-7 מבוגרים ו-6 ילדים.' : 'Check into the hotel for our 2-night stay! We have 3 rooms booked for 7 adults and 6 kids.',
-          icon: '🏨'
-        },
-        {
-          id: 'e2b', time: '18:30', duration: 120,
-          title: isHe ? 'ארוחת ערב ב-The Magic II' : 'Dinner at The Magic II',
-          description: isHe ? 'הזמנה ל-15 אנשים! (יש לשלוח הזמנות מראש 2-3 ימים לפני). תפריט: www.themagic2.hu/etlap' : 'Reservation for 15 people! (Need to send meal orders 2-3 days prior). Menu: www.themagic2.hu/etlap',
-          icon: '🪄'
-        }
-      ]
+      events: []
     },
     {
       id: 'day-2',
@@ -43,20 +24,7 @@ const getItinerary = (lang) => {
       date: isHe ? '22 באוגוסט' : 'Aug 22',
       title: isHe ? 'נסיעה לסלובקיה' : 'Roadtrip to Slovakia',
       location: isHe ? 'בודפשט ➡️ סלובקיה' : 'Budapest ➡️ Slovakia',
-      events: [
-        {
-          id: 'e4b', time: '09:00', duration: 60,
-          title: isHe ? 'צ\'ק-אאוט: Gozsdu Court' : 'Check-out: Gozsdu Court',
-          description: isHe ? 'אורזים ועוזבים את המלון לפני איסוף הרכבים.' : 'Pack up and check out of the hotel before grabbing the cars.',
-          icon: '🧳'
-        },
-        {
-          id: 'e6', time: '16:00', duration: 90,
-          title: isHe ? 'צ\'ק-אין: Holiday Village Tatralandia' : 'Check-in: Holiday Village Tatralandia',
-          description: isHe ? 'הזמנה #2313114 ע"ש עינת מלינוביץ. 4 חדרים. כולל ארוחת בוקר וכניסה לפארק המים.' : 'Reservation #2313114 under Einat Malinovitch. 4 rooms. Breakfast & water park passes included.',
-          icon: '🎢'
-        }
-      ]
+      events: []
     },
     {
       id: 'day-4',
@@ -98,28 +66,14 @@ const getItinerary = (lang) => {
       date: isHe ? '28 באוגוסט' : 'Aug 28',
       title: isHe ? 'חזרה לבודפשט' : 'Return to Budapest',
       location: isHe ? 'סלובקיה ➡️ בודפשט' : 'Slovakia ➡️ Budapest',
-      events: [
-        {
-          id: 'e12', time: '10:00', duration: 240,
-          title: isHe ? 'צ\'ק-אאוט ונסיעה להונגריה' : 'Check-out & Drive back to Hungary',
-          description: isHe ? 'עזיבת Holiday Village Tatralandia עד 10:00 בבוקר ויציאה לדרך לכיוון בודפשט.' : 'Check out of Holiday Village Tatralandia by 10:00 AM and hit the road to Budapest.',
-          icon: '🚗'
-        }
-      ]
+      events: []
     },
     {
       id: 'day-10',
       date: isHe ? '29 באוגוסט' : 'Aug 29',
       title: isHe ? 'חוזרים הביתה' : 'Heading Home',
       location: isHe ? 'בודפשט ➡️ ישראל' : 'Budapest ➡️ Israel',
-      events: [
-        {
-          id: 'e14', time: '13:40', duration: 195,
-          title: isHe ? 'טיסת W62327 (בודפשט ➡️ תל אביב)' : 'Flight W62327 (BUD ➡️ TLV)',
-          description: isHe ? 'טיסת וויזאייר יוצאת מבודפשט ב-13:40, נוחתת בנתב"ג ב-17:55. אישור: PIJRVV' : 'Wizz Air flight departing Budapest BUD (Terminal 2B) at 13:40, arriving in TLV (Terminal 3) at 17:55. Confirmation: PIJRVV',
-          icon: '✈️'
-        }
-      ]
+      events: []
     }
   ];
 };
