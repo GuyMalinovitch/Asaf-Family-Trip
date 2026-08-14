@@ -16,7 +16,7 @@ export default function Itinerary() {
   
   const [dbEvents, setDbEvents] = useState([]);
   const [activeDayId, setActiveDayId] = useState(itineraryData[0].id);
-  const [viewMode, setViewMode] = useState('calendar'); // 'feed' | 'calendar'
+  const [viewMode, setViewMode] = useState('daily'); // 'feed' | 'daily' | 'weekly'
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -151,21 +151,30 @@ export default function Itinerary() {
           <button 
             onClick={() => setViewMode('feed')}
             style={{
-              padding: '8px 16px', border: 'none', borderRadius: '12px', fontWeight: 'bold',
+              padding: '8px 12px', border: 'none', borderRadius: '12px', fontWeight: 'bold',
               background: viewMode === 'feed' ? 'white' : 'transparent',
               boxShadow: viewMode === 'feed' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
               color: viewMode === 'feed' ? 'var(--primary)' : '#666', cursor: 'pointer'
             }}
           >{t('itinerary.feedBtn')}</button>
           <button 
-            onClick={() => setViewMode('calendar')}
+            onClick={() => setViewMode('daily')}
             style={{
-              padding: '8px 16px', border: 'none', borderRadius: '12px', fontWeight: 'bold',
-              background: viewMode === 'calendar' ? 'white' : 'transparent',
-              boxShadow: viewMode === 'calendar' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
-              color: viewMode === 'calendar' ? 'var(--primary)' : '#666', cursor: 'pointer'
+              padding: '8px 12px', border: 'none', borderRadius: '12px', fontWeight: 'bold',
+              background: viewMode === 'daily' ? 'white' : 'transparent',
+              boxShadow: viewMode === 'daily' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
+              color: viewMode === 'daily' ? 'var(--primary)' : '#666', cursor: 'pointer'
             }}
-          >{t('itinerary.calBtn')}</button>
+          >{t('itinerary.dailyBtn')}</button>
+          <button 
+            onClick={() => setViewMode('weekly')}
+            style={{
+              padding: '8px 12px', border: 'none', borderRadius: '12px', fontWeight: 'bold',
+              background: viewMode === 'weekly' ? 'white' : 'transparent',
+              boxShadow: viewMode === 'weekly' ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
+              color: viewMode === 'weekly' ? 'var(--primary)' : '#666', cursor: 'pointer'
+            }}
+          >{t('itinerary.weeklyBtn')}</button>
         </div>
       </div>
 
@@ -199,7 +208,7 @@ export default function Itinerary() {
           {activeDay.title}
         </h3>
         
-        {viewMode === 'feed' ? (
+        {viewMode === 'feed' && (
           /* FEED VIEW */
           <div>
             {activeDay.events.map((event, index) => {
@@ -229,7 +238,9 @@ export default function Itinerary() {
               );
             })}
           </div>
-        ) : (
+        )}
+
+        {viewMode === 'daily' && (
           /* OUTLOOK/GOOGLE CALENDAR VIEW */
           <div style={{ 
             background: 'rgba(255,255,255,0.9)', 
@@ -276,12 +287,10 @@ export default function Itinerary() {
 
               {/* Plotted Events */}
               {getCalendarEvents().map((ev) => {
-                // Ensure event is within visible bounds
                 const startHour = Math.max(ev.startMins / 60, CAL_START_HOUR);
                 const top = (startHour - CAL_START_HOUR) * HOUR_HEIGHT;
                 const height = (ev.duration / 60) * HOUR_HEIGHT;
                 
-                // If the event starts before the calendar view (e.g. 5AM), clamp it for visual safety, though data currently starts >= 07:00
                 if (startHour > CAL_END_HOUR) return null;
 
                 const widthPct = 100 / ev.overlapCount;
@@ -296,10 +305,10 @@ export default function Itinerary() {
                       position: 'absolute',
                       top: `${top}px`,
                       height: `${height}px`,
-                      insetInlineStart: `calc(50px + ${leftOffset}%)`, // offset by the time column width (50px)
+                      insetInlineStart: `calc(50px + ${leftOffset}%)`,
                       width: `calc(100% - 50px)`,
                       maxWidth: `${widthPct}%`,
-                      padding: '2px', // spacing between overlapping events
+                      padding: '2px',
                       cursor: 'pointer'
                     }}
                   >
@@ -317,6 +326,150 @@ export default function Itinerary() {
                         {ev.time} {ev.icon}
                       </div>
                       <div style={{ fontSize: '0.85rem', fontWeight: 'bold', lineHeight: '1.2' }}>{displayTitle}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {viewMode === 'weekly' && (
+          /* WEEKLY CALENDAR VIEW */
+          <div style={{ 
+            background: 'rgba(255,255,255,0.9)', 
+            borderRadius: '16px', 
+            border: '1px solid #eee',
+            position: 'relative',
+            overflowX: 'auto',
+            overflowY: 'auto',
+            maxHeight: '60vh',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
+          }}>
+            <div style={{ display: 'flex', minWidth: 'max-content' }}>
+              
+              {/* Time Axis Column (Sticky) */}
+              <div style={{ 
+                width: '50px', 
+                position: 'sticky', 
+                insetInlineStart: 0, 
+                background: 'rgba(255,255,255,0.95)', 
+                zIndex: 20, 
+                borderInlineEnd: '1px solid #eaeaea' 
+              }}>
+                <div style={{ height: '40px', borderBottom: '1px solid #eaeaea' }} />
+                <div style={{ position: 'relative', minHeight: `${(CAL_END_HOUR - CAL_START_HOUR + 1) * HOUR_HEIGHT}px` }}>
+                  {hours.map(hour => (
+                    <div key={hour} style={{ 
+                      height: `${HOUR_HEIGHT}px`, 
+                      borderBottom: '1px solid #eaeaea', 
+                      textAlign: 'center', 
+                      fontSize: '0.75rem', 
+                      color: '#888', 
+                      paddingTop: '5px' 
+                    }}>
+                      {hour}:00
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Day Columns */}
+              {data.map(day => {
+                // Calculate overlaps for this specific day
+                let dayEvents = [...day.events].map(ev => ({
+                  ...ev,
+                  startMins: timeToMins(ev.time),
+                  endMins: timeToMins(ev.time) + ev.duration
+                }));
+                dayEvents.forEach(ev => {
+                  const overlapping = dayEvents.filter(e => (e.startMins < ev.endMins && e.endMins > ev.startMins));
+                  ev.overlapCount = overlapping.length;
+                  ev.overlapIndex = overlapping.findIndex(e => e.id === ev.id);
+                });
+
+                return (
+                  <div key={day.id} style={{ width: '130px', borderInlineEnd: '1px solid #eaeaea', position: 'relative' }}>
+                    {/* Day Header */}
+                    <div style={{ 
+                      height: '40px', 
+                      borderBottom: '1px solid #eaeaea', 
+                      textAlign: 'center', 
+                      padding: '5px', 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      justifyContent: 'center',
+                      background: day.id === activeDayId ? 'rgba(0, 198, 255, 0.1)' : 'transparent'
+                    }}>
+                      <span style={{ 
+                        fontWeight: 'bold', 
+                        fontSize: '0.85rem', 
+                        color: day.id === activeDayId ? 'var(--primary)' : '#444' 
+                      }}>
+                        {day.date}
+                      </span>
+                    </div>
+                    
+                    {/* Day Timeline */}
+                    <div style={{ position: 'relative', minHeight: `${(CAL_END_HOUR - CAL_START_HOUR + 1) * HOUR_HEIGHT}px` }}>
+                      {/* Horizontal Grid Lines */}
+                      {hours.map((hour, i) => (
+                        <div key={hour} style={{ 
+                          position: 'absolute', 
+                          top: `${i * HOUR_HEIGHT}px`, 
+                          left: 0, right: 0, 
+                          height: `${HOUR_HEIGHT}px`, 
+                          borderBottom: '1px solid #eaeaea' 
+                        }} />
+                      ))}
+                      
+                      {/* Plotted Events for this day */}
+                      {dayEvents.map(ev => {
+                        const startHour = Math.max(ev.startMins / 60, CAL_START_HOUR);
+                        if (startHour > CAL_END_HOUR) return null;
+                        const top = (startHour - CAL_START_HOUR) * HOUR_HEIGHT;
+                        const height = (ev.duration / 60) * HOUR_HEIGHT;
+                        const widthPct = 100 / ev.overlapCount;
+                        const leftOffset = ev.overlapIndex * widthPct;
+                        const displayTitle = isEn && ev.titleEn ? ev.titleEn : ev.title;
+
+                        return (
+                          <div 
+                            key={ev.id} 
+                            onClick={() => setSelectedEvent(ev)} 
+                            style={{
+                              position: 'absolute', 
+                              top: `${top}px`, 
+                              height: `${height}px`,
+                              insetInlineStart: `${leftOffset}%`, 
+                              width: `${widthPct}%`, 
+                              padding: '1px', 
+                              cursor: 'pointer', 
+                              zIndex: 10
+                            }}
+                          >
+                            <div style={{ 
+                              background: 'var(--primary)', 
+                              color: 'white', 
+                              width: '100%', 
+                              height: '100%', 
+                              borderRadius: '4px', 
+                              padding: '4px', 
+                              overflow: 'hidden', 
+                              fontSize: '0.7rem', 
+                              lineHeight: '1.2',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                            }}>
+                              <div style={{ fontWeight: 'bold', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {ev.time} {ev.icon}
+                              </div>
+                              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                {displayTitle}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );
