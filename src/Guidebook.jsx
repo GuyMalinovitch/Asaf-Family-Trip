@@ -21,15 +21,23 @@ export default function Guidebook() {
 
   const handleAddLocation = async (e) => {
     e.preventDefault();
+    
+    let icon = '📍';
+    if (newLoc.type === 'Hotel') icon = '🏨';
+    if (newLoc.type === 'Restaurant') icon = '🍽️';
+    if (newLoc.type === 'Attraction') icon = '🎢';
+    if (newLoc.type === 'Shopping') icon = '🛍️';
+    if (newLoc.type === 'Transport') icon = '🚗';
+
     try {
       if (editingId) {
-        await updateDoc(doc(db, 'locations', editingId), { ...newLoc });
+        await updateDoc(doc(db, 'locations', editingId), { ...newLoc, icon });
       } else {
-        await addDoc(collection(db, 'locations'), newLoc);
+        await addDoc(collection(db, 'locations'), { ...newLoc, icon });
       }
       setIsAdding(false);
       setEditingId(null);
-      setNewLoc({ title: '', type: 'Point of Interest', desc: '', icon: '📍', query: '' });
+      setNewLoc({ title: '', type: 'Point of Interest', desc: '', query: '' });
     } catch (error) {
       console.error("Error saving location: ", error);
     }
@@ -40,7 +48,6 @@ export default function Guidebook() {
       title: pin.title || '',
       type: pin.type || 'Point of Interest',
       desc: pin.desc || '',
-      icon: pin.icon || '📍',
       query: pin.query || ''
     });
     setEditingId(pin.firebaseId);
@@ -60,7 +67,7 @@ export default function Guidebook() {
         <button 
           onClick={() => {
             setEditingId(null);
-            setNewLoc({ title: '', type: 'Point of Interest', desc: '', icon: '📍', query: '' });
+            setNewLoc({ title: '', type: 'Point of Interest', desc: '', query: '' });
             setIsAdding(true);
           }}
           style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0, 198, 255, 0.3)' }}
@@ -131,16 +138,37 @@ export default function Guidebook() {
           <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', overflowY: 'auto', maxHeight: '90vh' }}>
             <h3 style={{ margin: '0 0 15px 0' }}>{editingId ? 'Edit Location' : 'Add New Location'}</h3>
             <form onSubmit={handleAddLocation} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <input required type="text" placeholder="Title (e.g. Castle)" className="glass-input" style={{ padding: '10px' }}
-                value={newLoc.title} onChange={e => setNewLoc({...newLoc, title: e.target.value})} />
-              <input required type="text" placeholder="Type (e.g. Attraction, Hotel)" className="glass-input" style={{ padding: '10px' }}
-                value={newLoc.type} onChange={e => setNewLoc({...newLoc, type: e.target.value})} />
-              <textarea placeholder="Description" className="glass-input" style={{ padding: '10px', minHeight: '60px', resize: 'vertical' }}
-                value={newLoc.desc} onChange={e => setNewLoc({...newLoc, desc: e.target.value})} />
-              <input type="text" placeholder="Map Query (e.g. Buda+Castle)" className="glass-input" style={{ padding: '10px' }}
-                value={newLoc.query} onChange={e => setNewLoc({...newLoc, query: e.target.value})} />
-              <input type="text" placeholder="Emoji Icon (e.g. 🏰)" className="glass-input" style={{ padding: '10px' }}
-                value={newLoc.icon} onChange={e => setNewLoc({...newLoc, icon: e.target.value})} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold' }}>Title</label>
+                <input required type="text" placeholder="e.g. Buda Castle" className="glass-input" style={{ padding: '10px' }}
+                  value={newLoc.title} onChange={e => setNewLoc({...newLoc, title: e.target.value})} />
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold' }}>Category</label>
+                <select className="glass-input" style={{ padding: '10px', appearance: 'none' }}
+                  value={newLoc.type} onChange={e => setNewLoc({...newLoc, type: e.target.value})}>
+                  <option value="Point of Interest">📍 Point of Interest</option>
+                  <option value="Hotel">🏨 Hotel / Lodging</option>
+                  <option value="Restaurant">🍽️ Restaurant / Food</option>
+                  <option value="Attraction">🎢 Attraction / Park</option>
+                  <option value="Shopping">🛍️ Shopping</option>
+                  <option value="Transport">🚗 Transport / Rental</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold' }}>Description (Optional)</label>
+                <textarea placeholder="Write a short note..." className="glass-input" style={{ padding: '10px', minHeight: '60px', resize: 'vertical' }}
+                  value={newLoc.desc} onChange={e => setNewLoc({...newLoc, desc: e.target.value})} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold' }}>Google Maps Query</label>
+                <input type="text" placeholder="e.g. Buda+Castle+Budapest" className="glass-input" style={{ padding: '10px' }}
+                  value={newLoc.query} onChange={e => setNewLoc({...newLoc, query: e.target.value})} />
+                <span style={{ fontSize: '0.7rem', color: '#888' }}>*If left empty, the Title will be used for search.</span>
+              </div>
               
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button type="button" onClick={() => setIsAdding(false)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>Cancel</button>
