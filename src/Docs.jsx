@@ -94,10 +94,18 @@ export default function Docs() {
     <div style={{ paddingBottom: '80px', position: 'relative', minHeight: '80vh' }}>
       
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '25px' }}>
-        <h1 style={{ fontSize: '1.8rem', color: 'var(--text-dark)', marginBottom: '5px' }}>{t('docs.title')}</h1>
-        <p style={{ color: '#666', margin: 0 }}>{t('docs.subtitle')}</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+        <h1 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-dark)' }}>{t('docs.title')}</h1>
+        <button 
+          onClick={() => setIsAdding(true)}
+          style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0, 198, 255, 0.3)' }}
+        >
+          +
+        </button>
       </div>
+      <p style={{ color: '#555', fontSize: '1.1rem', lineHeight: '1.5', marginBottom: '20px' }}>
+        {t('docs.subtitle')}
+      </p>
 
       {/* Docs Grid */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -200,23 +208,6 @@ export default function Docs() {
           </div>
         </div>
       )}
-
-      {/* Floating Action Button */}
-      <button 
-        onClick={() => setIsAdding(true)}
-        style={{
-          position: 'fixed', bottom: '90px', insetInlineEnd: '20px', width: '56px', height: '56px',
-          borderRadius: '50%', background: 'var(--primary)', color: 'white', border: 'none',
-          fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 15px rgba(0, 198, 255, 0.5)', cursor: 'pointer', zIndex: 50,
-          transition: 'transform 0.2s ease'
-        }}
-        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
-        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-      >
-        +
-      </button>
-
     </div>
   );
 }

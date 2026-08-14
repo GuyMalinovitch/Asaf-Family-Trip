@@ -139,8 +139,16 @@ export default function Itinerary() {
       
       {/* Header & Controls */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-dark)' }}>{t('itinerary.title')}</h1>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <h1 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-dark)' }}>{t('itinerary.title')}</h1>
+            <button 
+              onClick={() => setIsAdding(true)}
+              style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0, 198, 255, 0.3)' }}
+            >
+              +
+            </button>
+          </div>
           <p style={{ margin: '5px 0 0 0', color: '#555', fontWeight: '600' }}>
             📍 {activeDay.location}
           </p>
@@ -589,22 +597,6 @@ export default function Itinerary() {
         </div>
         );
       })}
-
-      {/* Floating Action Button */}
-      <button 
-        onClick={() => setIsAdding(true)}
-        style={{
-          position: 'fixed', bottom: '90px', insetInlineEnd: '20px', width: '56px', height: '56px',
-          borderRadius: '50%', background: 'var(--primary)', color: 'white', border: 'none',
-          fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 15px rgba(0, 198, 255, 0.5)', cursor: 'pointer', zIndex: 50,
-          transition: 'transform 0.2s ease'
-        }}
-        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
-        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-      >
-        +
-      </button>
 
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
