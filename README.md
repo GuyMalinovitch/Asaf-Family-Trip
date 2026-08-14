@@ -33,3 +33,28 @@ This app is currently configured for deployment on Firebase Hosting.
    npx firebase deploy
    ```
 The live site is available at: [https://family-trip-e19ea.web.app](https://family-trip-e19ea.web.app)
+
+## Local Scripts & Automation
+The project contains utility scripts in the `scripts/` folder designed to be run locally using Node.js.
+
+### GitHub Issue Sync (`sync-issues.js`)
+Users can submit bug reports directly from the app interface. To keep the app simple for non-technical family members, these are stored in Firebase. 
+This script fetches the reports from Firebase, creates GitHub issues using the `gh` CLI, and deletes the reports from Firebase.
+
+**Requirements:**
+- GitHub CLI installed and authenticated (`gh auth login`)
+- Node.js installed
+
+**Usage:**
+Run the script manually:
+```bash
+node scripts/sync-issues.js
+```
+
+**Automate it (Cron):**
+You can set this script to run automatically (e.g. every 5 minutes) via your local crontab:
+```bash
+crontab -e
+# Add the following line (adjust paths as needed):
+*/5 * * * * /usr/local/bin/node /Users/guym/projects/Asaf-Family-Trip/scripts/sync-issues.js
+```
