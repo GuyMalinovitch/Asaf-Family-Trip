@@ -13,7 +13,7 @@
 import { execSync } from 'child_process';
 
 const PROJECT_ID = "family-trip-e19ea";
-const GITHUB_REPO = "guym/Asaf-Family-Trip";
+const GITHUB_REPO = "GuyMalinovitch/Asaf-Family-Trip";
 
 async function sync() {
 
