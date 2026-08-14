@@ -81,7 +81,7 @@ const getItinerary = (lang) => {
 const resources = {
   en: {
     translation: {
-      nav: { home: 'Home', itinerary: 'Itinerary', docs: 'Docs', guidebook: 'Guidebook' },
+      nav: { home: 'Home', itinerary: 'Itinerary', docs: 'Docs', guidebook: 'Guidebook', recs: 'Recs' },
       home: {
         title: 'Asaf Family Trip', subtitle: 'Budapest & Slovakia',
         forecastTitle: 'Trip Forecast', live: 'Live', est: 'Est', fetching: 'Fetching live forecast...',
@@ -95,7 +95,7 @@ const resources = {
         weatherLocs: { 'Budapest': 'Bud', 'Slovakia': 'Slo' }
       },
       itinerary: {
-        title: 'Itinerary', feedBtn: 'Feed', calBtn: 'Calendar', addEvent: 'Add Event to', cancel: 'Cancel', add: 'Add Event',
+        title: 'Itinerary', feedBtn: 'Feed', dailyBtn: 'Daily', weeklyBtn: 'Weekly', addEvent: 'Add Event to', cancel: 'Cancel', add: 'Add Event',
         modalTitle: 'Title', modalDesc: 'Description'
       },
       docs: {
@@ -108,6 +108,14 @@ const resources = {
       guidebook: {
         title: 'Guidebook & Maps', subtitle: 'Tap any location to instantly open it as a pinned location in your Google Maps app.',
         openMaps: 'Open in Google Maps'
+      },
+      recommendations: {
+        title: 'Recommendations', subtitle: 'Family notes, restaurant ideas, and tips.',
+        empty: 'No recommendations yet. Be the first to add one!',
+        addTitle: 'Add Recommendation',
+        formTitle: 'Title (e.g. Best Gelato)',
+        formName: 'Your Name',
+        formDesc: 'Write your recommendation here...'
       },
       itineraryData: getItinerary('en'),
       docsData: [
@@ -125,7 +133,7 @@ const resources = {
   },
   he: {
     translation: {
-      nav: { home: 'ראשי', itinerary: 'לו"ז', docs: 'מסמכים', guidebook: 'מפות' },
+      nav: { home: 'ראשי', itinerary: 'לו"ז', docs: 'מסמכים', guidebook: 'מפות', recs: 'המלצות' },
       home: {
         title: 'הטיול של משפחת אסף', subtitle: 'בודפשט וסלובקיה',
         forecastTitle: 'תחזית מזג אוויר', live: 'חי', est: 'הערכה', fetching: 'מוריד תחזית...',
@@ -139,7 +147,7 @@ const resources = {
         weatherLocs: { 'Budapest': 'בוד', 'Slovakia': 'סלו' }
       },
       itinerary: {
-        title: 'לוח זמנים', feedBtn: 'פיד', calBtn: 'יומן', addEvent: 'הוסף אירוע ל-', cancel: 'ביטול', add: 'הוסף',
+        title: 'לוח זמנים', feedBtn: 'פיד', dailyBtn: 'יומי', weeklyBtn: 'שבועי', addEvent: 'הוסף אירוע ל-', cancel: 'ביטול', add: 'הוסף',
         modalTitle: 'כותרת', modalDesc: 'תיאור'
       },
       docs: {
@@ -152,6 +160,14 @@ const resources = {
       guidebook: {
         title: 'מפות והמלצות', subtitle: 'לחץ על כל מיקום כדי לפתוח אותו ישירות באפליקציית Google Maps.',
         openMaps: 'פתח ב-Google Maps'
+      },
+      recommendations: {
+        title: 'המלצות', subtitle: 'הערות, רעיונות למסעדות וטיפים למשפחה.',
+        empty: 'עדיין אין המלצות. תהיה הראשון להוסיף!',
+        addTitle: 'הוסף המלצה',
+        formTitle: 'כותרת (לדוגמה: הגלידה הכי טובה)',
+        formName: 'השם שלך',
+        formDesc: 'כתוב את ההמלצה שלך כאן...'
       },
       itineraryData: getItinerary('he'),
       docsData: [

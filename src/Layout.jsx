@@ -102,6 +102,10 @@ export default function Layout() {
           <span style={{ fontSize: '1.2rem', marginBottom: '2px' }}>🗺️</span>
           {t('nav.guidebook')}
         </Link>
+        <Link to="/recommendations" style={getLinkStyle('/recommendations')}>
+          <span style={{ fontSize: '1.2rem', marginBottom: '2px' }}>⭐</span>
+          {t('nav.recs')}
+        </Link>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import Layout from './Layout';
 import Itinerary from './Itinerary';
 import Guidebook from './Guidebook';
 import Docs from './Docs';
+import Recommendations from './Recommendations';
 
 export default function App() {
   const [auth, setAuth] = useState(() => localStorage.getItem('familyTripAuth') === 'true');
@@ -34,6 +35,7 @@ export default function App() {
                   <Route path="/itinerary" element={<Itinerary />} />
                   <Route path="/docs" element={<Docs />} />
                   <Route path="/guidebook" element={<Guidebook />} />
+                  <Route path="/recommendations" element={<Recommendations />} />
                 </Route>
               </Routes>
             </ProtectedRoute>

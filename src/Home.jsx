@@ -24,6 +24,7 @@ export default function Home() {
   const [issueDesc, setIssueDesc] = useState('');
   const [reportStatus, setReportStatus] = useState('idle'); // 'idle' | 'reporting' | 'reported'
   const [dbEvents, setDbEvents] = useState([]);
+  const [selectedWeatherDay, setSelectedWeatherDay] = useState(null);
   const { t } = useTranslation();
 
   // Fetch custom events from Firestore for 'Up Next'
@@ -77,7 +78,7 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=47.4979,49.0833&longitude=19.0402,19.6167&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FBudapest&forecast_days=16')
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=47.4979,49.0833&longitude=19.0402,19.6167&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,weather_code&timezone=Europe%2FBudapest&forecast_days=16')
       .then(res => res.json())
       .then(data => {
         const combined = tripDays.map(day => {
@@ -85,12 +86,22 @@ export default function Home() {
           const dateIndex = apiLocData.daily.time.indexOf(day.apiDate);
           
           if (dateIndex !== -1) {
+            // extract hourly data for this specific day (24 hours)
+            const startIndex = dateIndex * 24;
+            const endIndex = startIndex + 24;
+            const hourly = apiLocData.hourly.time.slice(startIndex, endIndex).map((t, idx) => ({
+              time: t.split('T')[1],
+              temp: `${Math.round(apiLocData.hourly.temperature_2m[startIndex + idx])}°`,
+              icon: getWeatherIcon(apiLocData.hourly.weather_code[startIndex + idx])
+            }));
+
             return {
               ...day,
               tempMax: `${Math.round(apiLocData.daily.temperature_2m_max[dateIndex])}°`,
               tempMin: `${Math.round(apiLocData.daily.temperature_2m_min[dateIndex])}°`,
               icon: getWeatherIcon(apiLocData.daily.weather_code[dateIndex]),
-              isLive: true
+              isLive: true,
+              hourly
             };
           } else {
             return {
@@ -98,7 +109,8 @@ export default function Home() {
               tempMax: day.loc === 'Budapest' ? '25°' : '22°',
               tempMin: day.loc === 'Budapest' ? '18°' : '14°',
               icon: '⛅',
-              isLive: false
+              isLive: false,
+              hourly: null
             };
           }
         });
@@ -160,12 +172,16 @@ export default function Home() {
             }}
           >
             {liveForecast.map((f, i) => (
-              <div key={i} style={{ 
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
-                background: 'rgba(255,255,255,0.8)', padding: '12px 10px', borderRadius: '14px', 
-                flex: '1 0 auto', minWidth: '85px',
-                position: 'relative'
-              }}>
+              <div 
+                key={i} 
+                onClick={() => f.hourly && setSelectedWeatherDay(f)}
+                style={{ 
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                  background: 'rgba(255,255,255,0.8)', padding: '12px 10px', borderRadius: '14px', 
+                  flex: '1 0 auto', minWidth: '85px',
+                  position: 'relative',
+                  cursor: f.hourly ? 'pointer' : 'default'
+                }}>
                 {!f.isLive && (
                   <span style={{ position: 'absolute', top: '-8px', right: '-5px', background: '#ff9f43', color: 'white', fontSize: '0.6rem', padding: '2px 5px', borderRadius: '8px', fontWeight: 'bold' }}>
                     {t('home.est')}
@@ -269,6 +285,33 @@ export default function Home() {
                   {reportStatus === 'reported' && t('home.reported')}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hourly Weather Modal */}
+      {selectedWeatherDay && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }} onClick={() => setSelectedWeatherDay(null)}>
+          <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#333' }}>
+                {t(`home.weatherDays.${selectedWeatherDay.date}`)} - {t(`home.weatherLocs.${selectedWeatherDay.loc}`)}
+              </h3>
+              <button onClick={() => setSelectedWeatherDay(null)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#888' }}>&times;</button>
+            </div>
+            
+            <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }} className="hide-scrollbar">
+              {selectedWeatherDay.hourly.map((h, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 15px', background: 'rgba(0,0,0,0.03)', borderRadius: '10px' }}>
+                  <span style={{ fontWeight: 'bold', color: '#555', width: '50px' }}>{h.time}</span>
+                  <span style={{ fontSize: '1.5rem' }}>{h.icon}</span>
+                  <span style={{ fontWeight: '800', color: 'var(--text-dark)', width: '40px', textAlign: 'right' }}>{h.temp}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
