@@ -1,18 +1,16 @@
-/**
- * sync-issues.js
- * 
- * A local cron script that reads bug reports from the public Firebase Firestore 
- * and pushes them to GitHub Issues, then deletes them from Firebase to avoid duplicates.
- * 
- * Setup:
- * 1. Ensure you are logged into the GitHub CLI (`gh auth login`).
- * 2. Run: node scripts/sync-issues.js
- * 
- * To automate, add to your local crontab (`crontab -e`):
- * */5 * * * * /usr/local/bin/node /Users/guym/projects/Asaf-Family-Trip/scripts/sync-issues.js
- */
+// sync-issues.js
+// 
+// A local cron script that reads bug reports from the public Firebase Firestore 
+// and pushes them to GitHub Issues, then deletes them from Firebase to avoid duplicates.
+// 
+// Setup:
+// 1. Ensure you are logged into the GitHub CLI (`gh auth login`).
+// 2. Run: node scripts/sync-issues.js
+// 
+// To automate, add to your local crontab (`crontab -e`):
+// */5 * * * * /usr/local/bin/node /Users/guym/projects/Asaf-Family-Trip/scripts/sync-issues.js
 
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
 
 const PROJECT_ID = "family-trip-e19ea";
 const GITHUB_REPO = "guym/Asaf-Family-Trip";
