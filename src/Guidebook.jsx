@@ -29,8 +29,6 @@ export default function Guidebook() {
     }
   };
 
-  const openAllMapUrl = `https://www.google.com/maps/dir/${pins.map(p => encodeURIComponent(p.query || p.title)).join('/')}`;
-
   return (
     <div style={{ paddingBottom: '40px', position: 'relative', minHeight: '80vh' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
@@ -46,19 +44,6 @@ export default function Guidebook() {
       <p style={{ marginBottom: '20px', color: '#555', fontSize: '1.1rem', lineHeight: '1.5' }}>
         {t('guidebook.subtitle')}
       </p>
-
-      {pins.length > 0 && (
-        <a 
-          href={openAllMapUrl}
-          target="_blank" 
-          rel="noreferrer"
-          style={{
-            display: 'block', textAlign: 'center', marginBottom: '20px', background: '#34a853', color: 'white', textDecoration: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', boxShadow: '0 4px 10px rgba(52, 168, 83, 0.3)'
-          }}
-        >
-          🗺️ Open Route of All Locations
-        </a>
-      )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {pins.map((pin, i) => (
