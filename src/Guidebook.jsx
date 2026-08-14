@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db } from './firebase';
-import { collection, addDoc, onSnapshot, query } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 
 export default function Guidebook() {
   const { t } = useTranslation();
   const [pins, setPins] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [newLoc, setNewLoc] = useState({ title: '', type: 'Point of Interest', desc: '', icon: '📍', query: '' });
 
   useEffect(() => {
@@ -21,11 +22,34 @@ export default function Guidebook() {
   const handleAddLocation = async (e) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, 'locations'), newLoc);
+      if (editingId) {
+        await updateDoc(doc(db, 'locations', editingId), { ...newLoc });
+      } else {
+        await addDoc(collection(db, 'locations'), newLoc);
+      }
       setIsAdding(false);
+      setEditingId(null);
       setNewLoc({ title: '', type: 'Point of Interest', desc: '', icon: '📍', query: '' });
     } catch (error) {
-      console.error("Error adding location: ", error);
+      console.error("Error saving location: ", error);
+    }
+  };
+
+  const handleEditLocation = (pin) => {
+    setNewLoc({
+      title: pin.title || '',
+      type: pin.type || 'Point of Interest',
+      desc: pin.desc || '',
+      icon: pin.icon || '📍',
+      query: pin.query || ''
+    });
+    setEditingId(pin.firebaseId);
+    setIsAdding(true);
+  };
+
+  const handleDeleteLocation = async (firebaseId) => {
+    if (window.confirm("Delete this location?")) {
+      await deleteDoc(doc(db, 'locations', firebaseId));
     }
   };
 
@@ -34,7 +58,11 @@ export default function Guidebook() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
         <h1 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-dark)' }}>{t('guidebook.title')}</h1>
         <button 
-          onClick={() => setIsAdding(true)}
+          onClick={() => {
+            setEditingId(null);
+            setNewLoc({ title: '', type: 'Point of Interest', desc: '', icon: '📍', query: '' });
+            setIsAdding(true);
+          }}
           style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0, 198, 255, 0.3)' }}
         >
           +
@@ -52,13 +80,19 @@ export default function Guidebook() {
             borderRadius: '16px',
             padding: '20px',
             boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-            borderLeft: '5px solid var(--primary)',
+            borderInlineStart: '5px solid var(--primary)',
             display: 'flex',
             flexDirection: 'column',
-            gap: '15px'
+            gap: '15px',
+            position: 'relative'
           }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px' }}>
-              <div style={{ fontSize: '2.5rem', background: 'rgba(0, 198, 255, 0.1)', width: '60px', height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', top: '15px', insetInlineEnd: '15px', display: 'flex', gap: '10px' }}>
+              <button onClick={() => handleEditLocation(pin)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}>✏️</button>
+              <button onClick={() => handleDeleteLocation(pin.firebaseId)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}>🗑️</button>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', paddingRight: '50px' }}>
+              <div style={{ fontSize: '2.5rem', background: 'rgba(0, 198, 255, 0.1)', width: '60px', height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {pin.icon}
               </div>
               <div style={{ flex: 1 }}>
@@ -95,7 +129,7 @@ export default function Guidebook() {
           background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
         }}>
           <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', overflowY: 'auto', maxHeight: '90vh' }}>
-            <h3 style={{ margin: '0 0 15px 0' }}>Add New Location</h3>
+            <h3 style={{ margin: '0 0 15px 0' }}>{editingId ? 'Edit Location' : 'Add New Location'}</h3>
             <form onSubmit={handleAddLocation} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <input required type="text" placeholder="Title (e.g. Castle)" className="glass-input" style={{ padding: '10px' }}
                 value={newLoc.title} onChange={e => setNewLoc({...newLoc, title: e.target.value})} />
@@ -110,7 +144,7 @@ export default function Guidebook() {
               
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button type="button" onClick={() => setIsAdding(false)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>Cancel</button>
-                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>Add Location</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>{editingId ? 'Save' : 'Add Location'}</button>
               </div>
             </form>
           </div>

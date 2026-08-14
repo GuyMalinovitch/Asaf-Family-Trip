@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db } from './firebase';
-import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 
 export default function Recommendations() {
   const { t } = useTranslation();
   const [recs, setRecs] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [newRec, setNewRec] = useState({ title: '', recommender: '', desc: '' });
 
   useEffect(() => {
@@ -21,14 +22,31 @@ export default function Recommendations() {
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, 'recommendations'), {
-        ...newRec,
-        timestamp: new Date().getTime()
-      });
+      if (editingId) {
+        await updateDoc(doc(db, 'recommendations', editingId), { ...newRec });
+      } else {
+        await addDoc(collection(db, 'recommendations'), {
+          ...newRec,
+          timestamp: new Date().getTime()
+        });
+      }
       setIsAdding(false);
+      setEditingId(null);
       setNewRec({ title: '', recommender: '', desc: '' });
     } catch (error) {
-      console.error("Error adding recommendation: ", error);
+      console.error("Error saving recommendation: ", error);
+    }
+  };
+
+  const handleEdit = (rec) => {
+    setNewRec({ title: rec.title || '', recommender: rec.recommender || '', desc: rec.desc || '' });
+    setEditingId(rec.firebaseId);
+    setIsAdding(true);
+  };
+
+  const handleDelete = async (firebaseId) => {
+    if (window.confirm("Delete this recommendation?")) {
+      await deleteDoc(doc(db, 'recommendations', firebaseId));
     }
   };
 
@@ -37,7 +55,11 @@ export default function Recommendations() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
         <h1 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-dark)' }}>{t('recommendations.title')}</h1>
         <button 
-          onClick={() => setIsAdding(true)}
+          onClick={() => {
+            setEditingId(null);
+            setNewRec({ title: '', recommender: '', desc: '' });
+            setIsAdding(true);
+          }}
           style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0, 198, 255, 0.3)' }}
         >
           +
@@ -60,12 +82,17 @@ export default function Recommendations() {
               borderRadius: '16px',
               padding: '20px',
               boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-              borderLeft: '5px solid #ff4757',
+              borderInlineStart: '5px solid #ff4757',
               display: 'flex',
               flexDirection: 'column',
-              gap: '10px'
+              gap: '10px',
+              position: 'relative'
             }}>
-              <h3 style={{ margin: '0', fontSize: '1.3rem', color: '#222' }}>{rec.title}</h3>
+              <div style={{ position: 'absolute', top: '15px', insetInlineEnd: '15px', display: 'flex', gap: '10px' }}>
+                <button onClick={() => handleEdit(rec)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}>✏️</button>
+                <button onClick={() => handleDelete(rec.firebaseId)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}>🗑️</button>
+              </div>
+              <h3 style={{ margin: '0', fontSize: '1.3rem', color: '#222', paddingRight: '50px' }}>{rec.title}</h3>
               <p style={{ margin: 0, color: '#666', fontSize: '1rem', lineHeight: '1.4' }}>
                 {rec.desc}
               </p>
@@ -83,7 +110,7 @@ export default function Recommendations() {
           background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
         }}>
           <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', overflowY: 'auto', maxHeight: '90vh' }}>
-            <h3 style={{ margin: '0 0 15px 0' }}>{t('recommendations.addTitle')}</h3>
+            <h3 style={{ margin: '0 0 15px 0' }}>{editingId ? t('recommendations.addTitle') + ' (Edit)' : t('recommendations.addTitle')}</h3>
             <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <input required type="text" placeholder={t('recommendations.formTitle')} className="glass-input" style={{ padding: '10px' }}
                 value={newRec.title} onChange={e => setNewRec({...newRec, title: e.target.value})} />
@@ -94,7 +121,7 @@ export default function Recommendations() {
               
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button type="button" onClick={() => setIsAdding(false)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>{t('itinerary.cancel')}</button>
-                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>{t('itinerary.add')}</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>{editingId ? 'Save' : t('itinerary.add')}</button>
               </div>
             </form>
           </div>
