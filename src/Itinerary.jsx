@@ -634,7 +634,7 @@ export default function Itinerary() {
           </div>
         </div>
         );
-      })}
+      })()}
 
       {/* Floating Action Button */}
       <button 
