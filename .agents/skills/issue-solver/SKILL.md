@@ -24,7 +24,7 @@ Analyze each open issue and determine the appropriate T-shirt size estimation ba
 Formulate a brief proposed solution for each issue.
 
 ### 3. Present the Triage Table
-Create an artifact (e.g., `issue_triage.md`) containing a Markdown table with the following columns:
+Present a Markdown table directly in your chat response (do not create an artifact) with the following columns:
 *   Issue # and Title
 *   Proposed Solution
 *   T-Shirt Size (S, M, L, XL)
