@@ -285,6 +285,12 @@ export default function Itinerary() {
 
               {/* Red Time Line */}
               {(() => {
+                const activeDayNumber = parseInt(activeDayId.split('-')[1]) || 1;
+                const activeDayDate = 19 + activeDayNumber;
+                const isToday = now.getFullYear() === 2026 && now.getMonth() === 7 && now.getDate() === activeDayDate;
+                
+                if (!isToday) return null;
+
                 const currentHour = now.getHours() + now.getMinutes() / 60;
                 if (currentHour >= CAL_START_HOUR && currentHour <= CAL_END_HOUR) {
                   const top = (currentHour - CAL_START_HOUR) * HOUR_HEIGHT;
