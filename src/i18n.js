@@ -7,70 +7,70 @@ const getItinerary = (lang) => {
   return [
     {
       id: 'day-1',
-      date: isHe ? '20 באוגוסט' : 'Aug 20',
+      date: isHe ? 'יום ה׳, 20 באוגוסט' : 'Thu, Aug 20',
       title: isHe ? 'הגעה לבודפשט' : 'Arrival in Budapest',
       location: isHe ? 'בודפשט, הונגריה' : 'Budapest, Hungary',
       events: []
     },
     {
       id: 'day-2',
-      date: isHe ? '21 באוגוסט' : 'Aug 21',
+      date: isHe ? 'יום ו׳, 21 באוגוסט' : 'Fri, Aug 21',
       title: isHe ? 'יום חופשי בבודפשט' : 'Free day in Budapest',
       location: isHe ? 'בודפשט, הונגריה' : 'Budapest, Hungary',
       events: []
     },
     {
       id: 'day-3',
-      date: isHe ? '22 באוגוסט' : 'Aug 22',
+      date: isHe ? 'שבת, 22 באוגוסט' : 'Sat, Aug 22',
       title: isHe ? 'נסיעה לסלובקיה' : 'Roadtrip to Slovakia',
       location: isHe ? 'בודפשט ➡️ סלובקיה' : 'Budapest ➡️ Slovakia',
       events: []
     },
     {
       id: 'day-4',
-      date: isHe ? '23 באוגוסט' : 'Aug 23',
+      date: isHe ? 'יום א׳, 23 באוגוסט' : 'Sun, Aug 23',
       title: isHe ? 'פארק המים' : 'Water Park',
       location: isHe ? 'סלובקיה' : 'Slovakia',
       events: []
     },
     {
       id: 'day-5',
-      date: isHe ? '24 באוגוסט' : 'Aug 24',
+      date: isHe ? 'יום ב׳, 24 באוגוסט' : 'Mon, Aug 24',
       title: isHe ? 'טיולים בסביבה' : 'Exploring the area',
       location: isHe ? 'סלובקיה' : 'Slovakia',
       events: []
     },
     {
       id: 'day-6',
-      date: isHe ? '25 באוגוסט' : 'Aug 25',
+      date: isHe ? 'יום ג׳, 25 באוגוסט' : 'Tue, Aug 25',
       title: isHe ? 'פעילות משפחתית' : 'Family Activity',
       location: isHe ? 'סלובקיה' : 'Slovakia',
       events: []
     },
     {
       id: 'day-7',
-      date: isHe ? '26 באוגוסט' : 'Aug 26',
+      date: isHe ? 'יום ד׳, 26 באוגוסט' : 'Wed, Aug 26',
       title: isHe ? 'טיולים בסביבה' : 'Exploring the area',
       location: isHe ? 'סלובקיה' : 'Slovakia',
       events: []
     },
     {
       id: 'day-8',
-      date: isHe ? '27 באוגוסט' : 'Aug 27',
+      date: isHe ? 'יום ה׳, 27 באוגוסט' : 'Thu, Aug 27',
       title: isHe ? 'פעילות משפחתית' : 'Family Activity',
       location: isHe ? 'סלובקיה' : 'Slovakia',
       events: []
     },
     {
       id: 'day-9',
-      date: isHe ? '28 באוגוסט' : 'Aug 28',
+      date: isHe ? 'יום ו׳, 28 באוגוסט' : 'Fri, Aug 28',
       title: isHe ? 'חזרה לבודפשט' : 'Return to Budapest',
       location: isHe ? 'סלובקיה ➡️ בודפשט' : 'Slovakia ➡️ Budapest',
       events: []
     },
     {
       id: 'day-10',
-      date: isHe ? '29 באוגוסט' : 'Aug 29',
+      date: isHe ? 'שבת, 29 באוגוסט' : 'Sat, Aug 29',
       title: isHe ? 'חוזרים הביתה' : 'Heading Home',
       location: isHe ? 'בודפשט ➡️ ישראל' : 'Budapest ➡️ Israel',
       events: []
