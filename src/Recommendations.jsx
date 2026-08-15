@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db } from './firebase';
 import { collection, addDoc, onSnapshot, query, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { renderTextWithLinks } from './utils';
 
 export default function Recommendations() {
   const { t } = useTranslation();
@@ -9,6 +10,8 @@ export default function Recommendations() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [newRec, setNewRec] = useState({ title: '', recommender: '', desc: '' });
+
+  const [selectedRec, setSelectedRec] = useState(null);
 
   useEffect(() => {
     const q = query(collection(db, 'recommendations'));
@@ -41,12 +44,14 @@ export default function Recommendations() {
   const handleEdit = (rec) => {
     setNewRec({ title: rec.title || '', recommender: rec.recommender || '', desc: rec.desc || '' });
     setEditingId(rec.firebaseId);
+    setSelectedRec(null);
     setIsAdding(true);
   };
 
   const handleDelete = async (firebaseId) => {
     if (window.confirm("Delete this recommendation?")) {
       await deleteDoc(doc(db, 'recommendations', firebaseId));
+      setSelectedRec(null);
     }
   };
 
@@ -77,23 +82,23 @@ export default function Recommendations() {
           </div>
         ) : (
           recs.map((rec, i) => (
-            <div key={rec.firebaseId || i} style={{
-              background: 'rgba(255, 255, 255, 0.9)',
-              borderRadius: '16px',
-              padding: '20px',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-              borderInlineStart: '5px solid #ff4757',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-              position: 'relative'
-            }}>
-              <div style={{ position: 'absolute', top: '15px', insetInlineEnd: '15px', display: 'flex', gap: '10px' }}>
-                <button onClick={() => handleEdit(rec)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}>✏️</button>
-                <button onClick={() => handleDelete(rec.firebaseId)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}>🗑️</button>
-              </div>
-              <h3 style={{ margin: '0', fontSize: '1.3rem', color: '#222', paddingRight: '50px' }}>{rec.title}</h3>
-              <p style={{ margin: 0, color: '#666', fontSize: '1rem', lineHeight: '1.4' }}>
+            <div 
+              key={rec.firebaseId || i} 
+              onClick={() => setSelectedRec(rec)}
+              style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '16px',
+                padding: '20px',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+                borderInlineStart: '5px solid #ff4757',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                cursor: 'pointer'
+              }}
+            >
+              <h3 style={{ margin: '0', fontSize: '1.3rem', color: '#222' }}>{rec.title}</h3>
+              <p style={{ margin: 0, color: '#666', fontSize: '1rem', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {rec.desc}
               </p>
               <div style={{ fontSize: '0.85rem', color: '#999', marginTop: '5px', fontWeight: 'bold' }}>
@@ -124,6 +129,43 @@ export default function Recommendations() {
                 <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>{editingId ? 'Save' : t('itinerary.add')}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {selectedRec && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }} onClick={() => setSelectedRec(null)}>
+          <div 
+            className="glass-panel animate-fade-in" 
+            style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '1.4rem', color: '#222' }}>{selectedRec.title}</h3>
+            <div style={{ fontSize: '0.9rem', color: '#888', marginBottom: '15px', fontWeight: 'bold' }}>
+              👤 {selectedRec.recommender}
+            </div>
+            
+            <p style={{ margin: '0 0 25px 0', color: '#444', fontSize: '1rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+              {renderTextWithLinks(selectedRec.desc)}
+            </p>
+            
+            <div style={{ display: 'flex', gap: '10px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+              <button 
+                onClick={() => handleEdit(selectedRec)}
+                style={{ flex: 1, padding: '10px', borderRadius: '12px', background: '#f1f2f6', border: 'none', color: '#2f3542', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                ✏️ Edit
+              </button>
+              <button 
+                onClick={() => handleDelete(selectedRec.firebaseId)}
+                style={{ flex: 1, padding: '10px', borderRadius: '12px', background: 'rgba(255, 71, 87, 0.1)', border: 'none', color: '#ff4757', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                🗑️ Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

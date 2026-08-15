@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db } from './firebase';
 import { collection, addDoc, onSnapshot, query, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { renderTextWithLinks } from './utils';
 
 export default function Guidebook() {
   const { t } = useTranslation();
@@ -9,6 +10,8 @@ export default function Guidebook() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [newLoc, setNewLoc] = useState({ title: '', type: 'Point of Interest', desc: '', icon: '📍', query: '' });
+
+  const [selectedLoc, setSelectedLoc] = useState(null);
 
   useEffect(() => {
     const q = query(collection(db, 'locations'));
@@ -51,12 +54,14 @@ export default function Guidebook() {
       query: pin.query || ''
     });
     setEditingId(pin.firebaseId);
+    setSelectedLoc(null);
     setIsAdding(true);
   };
 
   const handleDeleteLocation = async (firebaseId) => {
     if (window.confirm("Delete this location?")) {
       await deleteDoc(doc(db, 'locations', firebaseId));
+      setSelectedLoc(null);
     }
   };
 
@@ -82,23 +87,22 @@ export default function Guidebook() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {pins.map((pin, i) => (
-          <div key={pin.firebaseId || i} style={{
-            background: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: '16px',
-            padding: '20px',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-            borderInlineStart: '5px solid var(--primary)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '15px',
-            position: 'relative'
-          }}>
-            <div style={{ position: 'absolute', top: '15px', insetInlineEnd: '15px', display: 'flex', gap: '10px' }}>
-              <button onClick={() => handleEditLocation(pin)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}>✏️</button>
-              <button onClick={() => handleDeleteLocation(pin.firebaseId)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}>🗑️</button>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', paddingRight: '50px' }}>
+          <div 
+            key={pin.firebaseId || i} 
+            onClick={() => setSelectedLoc(pin)}
+            style={{
+              background: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: '16px',
+              padding: '20px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+              borderInlineStart: '5px solid var(--primary)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px',
+              cursor: 'pointer'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px' }}>
               <div style={{ fontSize: '2.5rem', background: 'rgba(0, 198, 255, 0.1)', width: '60px', height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {pin.icon}
               </div>
@@ -107,7 +111,7 @@ export default function Guidebook() {
                   {pin.type}
                 </div>
                 <h3 style={{ margin: '0 0 5px 0', fontSize: '1.3rem', color: '#222' }}>{pin.title}</h3>
-                <p style={{ margin: 0, color: '#666', fontSize: '0.95rem', lineHeight: '1.4' }}>
+                <p style={{ margin: 0, color: '#666', fontSize: '0.95rem', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {pin.desc}
                 </p>
               </div>
@@ -117,6 +121,7 @@ export default function Guidebook() {
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pin.query || pin.title)}`}
               target="_blank" 
               rel="noreferrer"
+              onClick={e => e.stopPropagation()}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                 background: '#f1f3f4', color: '#1a73e8', textDecoration: 'none',
@@ -175,6 +180,64 @@ export default function Guidebook() {
                 <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>{editingId ? 'Save' : 'Add Location'}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {selectedLoc && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }} onClick={() => setSelectedLoc(null)}>
+          <div 
+            className="glass-panel animate-fade-in" 
+            style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '15px' }}>
+              <div style={{ fontSize: '3rem', background: 'rgba(0, 198, 255, 0.1)', width: '70px', height: '70px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {selectedLoc.icon}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--primary)', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '2px' }}>
+                  {selectedLoc.type}
+                </div>
+                <h3 style={{ margin: '0 0 5px 0', fontSize: '1.4rem', color: '#222' }}>{selectedLoc.title}</h3>
+              </div>
+            </div>
+            
+            <p style={{ margin: '0 0 25px 0', color: '#444', fontSize: '1rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+              {renderTextWithLinks(selectedLoc.desc)}
+            </p>
+            
+            <a 
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedLoc.query || selectedLoc.title)}`}
+              target="_blank" 
+              rel="noreferrer"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                background: '#f1f3f4', color: '#1a73e8', textDecoration: 'none',
+                padding: '12px', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem',
+                marginBottom: '20px'
+              }}
+            >
+              <span>📍</span> {t('guidebook.openMaps')}
+            </a>
+            
+            <div style={{ display: 'flex', gap: '10px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+              <button 
+                onClick={() => handleEditLocation(selectedLoc)}
+                style={{ flex: 1, padding: '10px', borderRadius: '12px', background: '#f1f2f6', border: 'none', color: '#2f3542', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                ✏️ Edit
+              </button>
+              <button 
+                onClick={() => handleDeleteLocation(selectedLoc.firebaseId)}
+                style={{ flex: 1, padding: '10px', borderRadius: '12px', background: 'rgba(255, 71, 87, 0.1)', border: 'none', color: '#ff4757', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                🗑️ Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

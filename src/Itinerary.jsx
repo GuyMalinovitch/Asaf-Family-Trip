@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db } from './firebase';
 import { collection, addDoc, updateDoc, onSnapshot, query, doc, deleteDoc } from 'firebase/firestore';
+import { renderTextWithLinks } from './utils';
 
 // Helper to convert "HH:mm" to minutes since 00:00
 const timeToMins = (timeStr) => {
@@ -93,6 +94,7 @@ export default function Itinerary() {
       description: ev.description || '',
       descriptionEn: ev.descriptionEn || '',
       icon: ev.icon || '🌟',
+      category: ev.category || 'Point of Interest',
       mapQuery: ev.mapQuery || ''
     });
     setEditingId(ev.firebaseId);
@@ -142,12 +144,6 @@ export default function Itinerary() {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             <h1 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-dark)' }}>{t('itinerary.title')}</h1>
-            <button 
-              onClick={() => setIsAdding(true)}
-              style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '50%', width: '36px', height: '36px', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0, 198, 255, 0.3)' }}
-            >
-              +
-            </button>
           </div>
           <p style={{ margin: '5px 0 0 0', color: '#555', fontWeight: '600' }}>
             📍 {activeDay.location}
@@ -212,39 +208,53 @@ export default function Itinerary() {
 
       {/* Main Content Area */}
       <div className="animate-fade-in" key={`${activeDay.id}-${viewMode}`}>
-        <h3 style={{ margin: '0 0 15px 0', fontSize: '1.2rem', color: '#333' }}>
-          {activeDay.title}
-        </h3>
+        {viewMode !== 'feed' && (
+          <h3 style={{ margin: '0 0 15px 0', fontSize: '1.2rem', color: '#333' }}>
+            {activeDay.title}
+          </h3>
+        )}
         
         {viewMode === 'feed' && (
           /* FEED VIEW */
-          <div>
-            {activeDay.events.map((event, index) => {
-              const displayTitle = isEn && event.titleEn ? event.titleEn : event.title;
-              const displayDesc = isEn && event.descriptionEn ? event.descriptionEn : event.description;
-              
-              return (
-                <div 
-                  key={event.id} 
-                  style={{ display: 'flex', marginBottom: '20px', cursor: 'pointer' }}
-                  onClick={() => setSelectedEvent(event)}
-                >
-                  <div style={{ width: '55px', fontSize: '0.9rem', color: '#666', fontWeight: 'bold', textAlign: 'right', paddingRight: '15px', paddingTop: '5px' }}>
-                    {event.time}
-                  </div>
-                  <div style={{ 
-                    flex: 1, background: 'rgba(255,255,255,0.85)', borderLeft: '4px solid var(--primary)', 
-                    padding: '15px', borderRadius: '0 12px 12px 0', boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                      <span style={{ fontSize: '1.3rem' }}>{event.icon}</span>
-                      <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#222' }}>{displayTitle}</h4>
-                    </div>
-                    <p style={{ margin: 0, fontSize: '0.95rem', color: '#555', lineHeight: '1.4' }}>{displayDesc}</p>
-                  </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+            {data.map(day => (
+              <div key={`feed-${day.id}`}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '15px', paddingBottom: '5px', borderBottom: '2px solid rgba(0,0,0,0.05)' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.3rem', color: 'var(--primary)' }}>{day.date}</h3>
+                  <span style={{ fontSize: '0.9rem', color: '#666', fontWeight: 'bold' }}>{day.title}</span>
                 </div>
-              );
-            })}
+                {day.events.length === 0 ? (
+                  <p style={{ color: '#999', fontStyle: 'italic', paddingLeft: '70px' }}>{t('itinerary.emptyDay') || 'No events scheduled for this day.'}</p>
+                ) : (
+                  day.events.map((event) => {
+                    const displayTitle = isEn && event.titleEn ? event.titleEn : event.title;
+                    const displayDesc = isEn && event.descriptionEn ? event.descriptionEn : event.description;
+                    
+                    return (
+                      <div 
+                        key={event.id} 
+                        style={{ display: 'flex', marginBottom: '20px', cursor: 'pointer' }}
+                        onClick={() => setSelectedEvent(event)}
+                      >
+                        <div style={{ width: '55px', fontSize: '0.9rem', color: '#666', fontWeight: 'bold', textAlign: 'right', paddingRight: '15px', paddingTop: '5px' }}>
+                          {event.time}
+                        </div>
+                        <div style={{ 
+                          flex: 1, background: 'rgba(255,255,255,0.85)', borderLeft: '4px solid var(--primary)', 
+                          padding: '15px', borderRadius: '0 12px 12px 0', boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                            <span style={{ fontSize: '1.3rem' }}>{event.icon}</span>
+                            <h4 style={{ margin: 0, fontSize: '1.1rem', color: '#222' }}>{displayTitle}</h4>
+                          </div>
+                          {displayDesc && <p style={{ margin: 0, fontSize: '0.95rem', color: '#555', lineHeight: '1.4' }}>{displayDesc}</p>}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            ))}
           </div>
         )}
 
@@ -517,6 +527,29 @@ export default function Itinerary() {
                 value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})} />
               <textarea placeholder="Description (English)" className="glass-input" style={{ padding: '10px', minHeight: '60px', resize: 'vertical' }}
                 value={newEvent.descriptionEn} onChange={e => setNewEvent({...newEvent, descriptionEn: e.target.value})} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold' }}>Category</label>
+                <select className="glass-input" style={{ padding: '10px', appearance: 'none' }}
+                  value={newEvent.category} onChange={e => {
+                    const cat = e.target.value;
+                    let icon = '🌟';
+                    if (cat === 'Flight') icon = '✈️';
+                    if (cat === 'Hotel') icon = '🏨';
+                    if (cat === 'Restaurant') icon = '🍽️';
+                    if (cat === 'Attraction') icon = '🎢';
+                    if (cat === 'Shopping') icon = '🛍️';
+                    if (cat === 'Transport') icon = '🚗';
+                    setNewEvent({...newEvent, category: cat, icon });
+                  }}>
+                  <option value="Point of Interest">🌟 Point of Interest</option>
+                  <option value="Flight">✈️ Flight</option>
+                  <option value="Hotel">🏨 Hotel / Lodging</option>
+                  <option value="Restaurant">🍽️ Restaurant / Food</option>
+                  <option value="Attraction">🎢 Attraction / Park</option>
+                  <option value="Shopping">🛍️ Shopping</option>
+                  <option value="Transport">🚗 Transport / Rental</option>
+                </select>
+              </div>
                 
               <input type="text" placeholder="Map Location (e.g. Gozsdu Court)" className="glass-input" style={{ padding: '10px' }}
                 value={newEvent.mapQuery} onChange={e => setNewEvent({...newEvent, mapQuery: e.target.value})} />
@@ -551,15 +584,20 @@ export default function Itinerary() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '3px' }}>
-                    {selectedEvent.time} {selectedEvent.endTime && `- ${selectedEvent.endTime}`}
+                    {selectedEvent.time} - {selectedEvent.endTime || 'Later'}
                   </div>
                   <h3 style={{ margin: '0', fontSize: '1.4rem', color: '#222', lineHeight: '1.2' }}>{displayTitle}</h3>
+                  {selectedEvent.category && (
+                    <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      {selectedEvent.category}
+                    </div>
+                  )}
                 </div>
               </div>
               
               {displayDesc && (
                 <p style={{ margin: '0 0 20px 0', color: '#555', fontSize: '1rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
-                  {displayDesc}
+                  {renderTextWithLinks(displayDesc)}
                 </p>
               )}
 
@@ -597,6 +635,26 @@ export default function Itinerary() {
         </div>
         );
       })}
+
+      {/* Floating Action Button */}
+      <button 
+        onClick={() => {
+          setEditingId(null);
+          setNewEvent({ time: '09:00', title: '', duration: 60, icon: '📍', category: 'Point of Interest' });
+          setIsAdding(true);
+        }}
+        style={{
+          position: 'fixed', bottom: '90px', insetInlineEnd: '20px', width: '56px', height: '56px',
+          borderRadius: '50%', background: 'var(--primary)', color: 'white', border: 'none',
+          fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 4px 15px rgba(0, 198, 255, 0.5)', cursor: 'pointer', zIndex: 50,
+          transition: 'transform 0.2s ease'
+        }}
+        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
+        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+      >
+        +
+      </button>
 
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }

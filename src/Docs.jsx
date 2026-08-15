@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { db, storage } from './firebase';
 import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { renderTextWithLinks } from './utils';
 
 export default function Docs() {
   const { t } = useTranslation();
@@ -13,6 +14,8 @@ export default function Docs() {
   const [newDoc, setNewDoc] = useState({ title: '', uploader: '', category: 'General' });
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
+
+  const [selectedDoc, setSelectedDoc] = useState(null);
 
   // Fetch docs from Firestore in real-time
   useEffect(() => {
@@ -26,10 +29,6 @@ export default function Docs() {
 
   const handleAddDoc = async (e) => {
     e.preventDefault();
-    if (!editingId && !selectedFile) {
-      alert(t('docs.pleaseSelectFile') || 'Please select a file first!');
-      return;
-    }
     
     setIsUploading(true);
     
@@ -41,7 +40,7 @@ export default function Docs() {
     if (newDoc.category === 'Insurance') icon = '🛡️';
 
     try {
-      let fileUrl = newDoc.fileUrl; // keep old if not changing
+      let fileUrl = newDoc.fileUrl || '';
       
       if (selectedFile) {
         // Upload new to Firebase Storage
@@ -69,7 +68,7 @@ export default function Docs() {
 
       setIsAdding(false);
       setEditingId(null);
-      setNewDoc({ title: '', uploader: '', category: 'General' });
+      setNewDoc({ title: '', uploader: '', category: 'General', notes: '' });
       setSelectedFile(null);
     } catch (error) {
       console.error("Error saving document:", error);
@@ -84,10 +83,12 @@ export default function Docs() {
       title: docItem.title || '',
       uploader: docItem.uploader || '',
       category: docItem.category || 'General',
-      fileUrl: docItem.fileUrl || '' // Preserve existing file URL
+      notes: docItem.notes || '',
+      fileUrl: docItem.fileUrl || ''
     });
     setEditingId(docItem.id);
     setSelectedFile(null);
+    setSelectedDoc(null);
     setIsAdding(true);
   };
 
@@ -97,6 +98,7 @@ export default function Docs() {
     try {
       // 1. Delete from Firestore
       await deleteDoc(doc(db, 'docs', id));
+      setSelectedDoc(null);
       
       // 2. Try to delete from Storage if it's a firebase storage URL
       if (fileUrl && fileUrl.includes('firebasestorage.googleapis.com')) {
@@ -123,7 +125,7 @@ export default function Docs() {
         <button 
           onClick={() => {
             setEditingId(null);
-            setNewDoc({ title: '', uploader: '', category: 'General' });
+            setNewDoc({ title: '', uploader: '', category: 'General', notes: '' });
             setSelectedFile(null);
             setIsAdding(true);
           }}
@@ -139,14 +141,19 @@ export default function Docs() {
       {/* Docs Grid */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {docs.map(doc => (
-          <div key={doc.id} style={{
-            display: 'flex', alignItems: 'center', gap: '15px',
-            background: 'rgba(255,255,255,0.9)',
-            borderRadius: '16px',
-            padding: '15px',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-            borderLeft: '4px solid var(--secondary)'
-          }}>
+          <div 
+            key={doc.id} 
+            onClick={() => setSelectedDoc(doc)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '15px',
+              background: 'rgba(255,255,255,0.9)',
+              borderRadius: '16px',
+              padding: '15px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+              borderLeft: '4px solid var(--secondary)',
+              cursor: 'pointer'
+            }}
+          >
             <div style={{ 
               width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(0, 114, 255, 0.1)', 
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' 
@@ -160,36 +167,6 @@ export default function Docs() {
                 <span>•</span>
                 <span>{doc.category}</span>
               </div>
-            </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button 
-                onClick={() => handleEditDoc(doc)}
-                style={{ 
-                  background: 'transparent', border: 'none', color: '#333', 
-                  fontSize: '1.1rem', cursor: 'pointer', padding: 0
-                }}>
-                ✏️
-              </button>
-              <a 
-                href={doc.fileUrl || '#'}
-                target="_blank"
-                rel="noreferrer"
-                title={t('docs.download') || 'Download'}
-                style={{ 
-                  background: 'transparent', border: 'none', color: 'var(--primary)', 
-                  fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center'
-                }}>
-                ⬇️
-              </a>
-              <button 
-                onClick={() => handleDeleteDoc(doc.id, doc.fileUrl)}
-                title={t('docs.delete') || 'Delete'}
-                style={{ 
-                  background: 'transparent', border: 'none', color: '#ff4757', 
-                  fontSize: '1.1rem', cursor: 'pointer', padding: 0
-                }}>
-                🗑️
-              </button>
             </div>
           </div>
         ))}
@@ -206,7 +183,7 @@ export default function Docs() {
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
         }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', overflowY: 'auto', maxHeight: '90vh' }}>
             <h3 style={{ margin: '0 0 15px 0' }}>{editingId ? 'Edit Document' : t('docs.uploadTitle')}</h3>
             <form onSubmit={handleAddDoc} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <input required type="text" placeholder={t('docs.docTitle')} className="glass-input" style={{ padding: '10px' }}
@@ -223,6 +200,9 @@ export default function Docs() {
                 <option value="Insurance">{t('docs.cats.insurance')}</option>
               </select>
 
+              <textarea placeholder="Notes (Optional)" className="glass-input" style={{ padding: '10px', minHeight: '60px', resize: 'vertical' }}
+                value={newDoc.notes || ''} onChange={e => setNewDoc({...newDoc, notes: e.target.value})} />
+
               <input 
                 type="file" 
                 ref={fileInputRef}
@@ -232,7 +212,7 @@ export default function Docs() {
               <div 
                 onClick={() => fileInputRef.current.click()}
                 style={{ padding: '20px', border: '2px dashed var(--primary)', borderRadius: '12px', textAlign: 'center', color: 'var(--primary)', cursor: 'pointer', background: 'rgba(0,198,255,0.05)' }}>
-                {selectedFile ? selectedFile.name : editingId ? (t('docs.tapFile') + ' (Optional - keep existing)') : t('docs.tapFile')}
+                {selectedFile ? selectedFile.name : (editingId && newDoc.fileUrl) ? (t('docs.tapFile') + ' (Optional - keep existing)') : t('docs.tapFile') + ' (Optional)'}
               </div>
               
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
@@ -242,6 +222,71 @@ export default function Docs() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {selectedDoc && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }} onClick={() => setSelectedDoc(null)}>
+          <div 
+            className="glass-panel animate-fade-in" 
+            style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '15px' }}>
+              <div style={{ fontSize: '3rem', background: 'rgba(0, 114, 255, 0.1)', width: '70px', height: '70px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {selectedDoc.icon}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--secondary)', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '2px' }}>
+                  {selectedDoc.category}
+                </div>
+                <h3 style={{ margin: '0 0 5px 0', fontSize: '1.4rem', color: '#222' }}>{selectedDoc.title}</h3>
+                <div style={{ fontSize: '0.9rem', color: '#888', fontWeight: 'bold' }}>
+                  👤 {selectedDoc.uploader}
+                </div>
+              </div>
+            </div>
+            
+            {selectedDoc.notes && (
+              <p style={{ margin: '0 0 25px 0', color: '#444', fontSize: '1rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                {renderTextWithLinks(selectedDoc.notes)}
+              </p>
+            )}
+            
+            {selectedDoc.fileUrl && (
+              <a 
+                href={selectedDoc.fileUrl}
+                target="_blank" 
+                rel="noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  background: '#f1f3f4', color: '#1a73e8', textDecoration: 'none',
+                  padding: '12px', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem',
+                  marginBottom: '20px'
+                }}
+              >
+                <span>⬇️</span> {t('docs.download') || 'Download File'}
+              </a>
+            )}
+            
+            <div style={{ display: 'flex', gap: '10px', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+              <button 
+                onClick={() => handleEditDoc(selectedDoc)}
+                style={{ flex: 1, padding: '10px', borderRadius: '12px', background: '#f1f2f6', border: 'none', color: '#2f3542', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                ✏️ Edit
+              </button>
+              <button 
+                onClick={() => handleDeleteDoc(selectedDoc.id, selectedDoc.fileUrl)}
+                style={{ flex: 1, padding: '10px', borderRadius: '12px', background: 'rgba(255, 71, 87, 0.1)', border: 'none', color: '#ff4757', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                🗑️ Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

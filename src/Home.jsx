@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db } from './firebase';
 import { collection, addDoc, onSnapshot, query, serverTimestamp } from 'firebase/firestore';
+import { renderTextWithLinks } from './utils';
 
 // WMO Weather Code to Emoji map
 const getWeatherIcon = (code) => {
@@ -25,7 +26,7 @@ export default function Home() {
   const [reportStatus, setReportStatus] = useState('idle'); // 'idle' | 'reporting' | 'reported'
   const [dbEvents, setDbEvents] = useState([]);
   const [selectedWeatherDay, setSelectedWeatherDay] = useState(null);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Fetch custom events from Firestore for 'Up Next'
   useEffect(() => {
@@ -199,6 +200,35 @@ export default function Home() {
         )}
       </div>
 
+      {/* Flight Details Widget */}
+      {dbEvents.filter(ev => ev.category === 'Flight').length > 0 && (
+        <div style={{ marginBottom: '25px' }}>
+          <h2 style={{ fontSize: '1.2rem', marginBottom: '15px' }}>✈️ {t('home.flightDetails') || 'Flight Details'}</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {dbEvents.filter(ev => ev.category === 'Flight').map(flight => {
+              const displayTitle = i18n.language === 'en' && flight.titleEn ? flight.titleEn : flight.title;
+              const displayDesc = i18n.language === 'en' && flight.descriptionEn ? flight.descriptionEn : flight.description;
+              const dayStr = flight.dayId ? flight.dayId.split('-')[1] : '';
+              return (
+              <div key={flight.firebaseId} style={{ background: 'white', borderRadius: '16px', padding: '20px', display: 'flex', alignItems: 'center', gap: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', borderLeft: '4px solid var(--primary)' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                    <span style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem' }}>{flight.time} {flight.endTime && `- ${flight.endTime}`}</span>
+                    <span style={{ color: '#999', fontSize: '0.8rem', fontWeight: 'bold' }}>Aug {19 + parseInt(dayStr)}</span>
+                  </div>
+                  <h3 style={{ margin: '0 0 5px 0', fontSize: '1.1rem' }}>{displayTitle}</h3>
+                  {displayDesc && (
+                    <p style={{ margin: 0, color: '#666', fontSize: '0.9rem', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>
+                      {renderTextWithLinks(displayDesc)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )})}
+          </div>
+        </div>
+      )}
+
       {/* Up Next Widget */}
       <h2 style={{ fontSize: '1.2rem', marginBottom: '15px' }}>⏱️ {t('home.upNext')}</h2>
       
@@ -214,7 +244,7 @@ export default function Home() {
             </div>
             <h3 style={{ margin: '0 0 5px 0', fontSize: '1.1rem' }}>{nextEvent.title}</h3>
             <p style={{ margin: 0, color: '#666', fontSize: '0.9rem', lineHeight: '1.4' }}>
-              {nextEvent.description}
+              {renderTextWithLinks(nextEvent.description)}
             </p>
           </div>
         </div>

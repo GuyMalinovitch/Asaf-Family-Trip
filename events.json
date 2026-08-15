@@ -1,0 +1,364 @@
+{
+  "documents": [
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/6Y8WUONNTClZdiokblax",
+      "fields": {
+        "dayId": {
+          "stringValue": "day-10"
+        },
+        "title": {
+          "stringValue": "טיסת W62327 (בודפשט ➡️ תל אביב)"
+        },
+        "icon": {
+          "stringValue": "✈️"
+        },
+        "description": {
+          "stringValue": "טיסת וויזאייר יוצאת מבודפשט ב-13:40, נוחתת בנתב\"ג ב-17:55. אישור: PIJRVV"
+        },
+        "duration": {
+          "integerValue": "195"
+        },
+        "time": {
+          "stringValue": "13:40"
+        },
+        "id": {
+          "stringValue": "e1786393972326588"
+        }
+      },
+      "createTime": "2026-08-10T20:32:52.539216Z",
+      "updateTime": "2026-08-10T20:32:52.539216Z"
+    },
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/AlRoSXyX0GctcAXSWLxj",
+      "fields": {
+        "id": {
+          "stringValue": "e1786733520081496"
+        },
+        "title": {
+          "stringValue": "צ'ק-אאוט ונסיעה להונגריה"
+        },
+        "time": {
+          "stringValue": "10:00"
+        },
+        "dayId": {
+          "stringValue": "day-9"
+        },
+        "description": {
+          "stringValue": "עזיבת Holiday Village Tatralandia עד 10:00 בבוקר ויציאה לדרך לכיוון בודפשט."
+        },
+        "duration": {
+          "integerValue": "240"
+        },
+        "icon": {
+          "stringValue": "🚗"
+        }
+      },
+      "createTime": "2026-08-14T18:52:00.203946Z",
+      "updateTime": "2026-08-14T18:52:00.203946Z"
+    },
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/FMAFw7mxoMi6dfHi1j2x",
+      "fields": {
+        "description": {
+          "stringValue": ""
+        },
+        "title": {
+          "stringValue": "מסלול צמרות העצים"
+        },
+        "time": {
+          "stringValue": "10:00"
+        },
+        "dayId": {
+          "stringValue": "day-5"
+        },
+        "titleEn": {
+          "stringValue": ""
+        },
+        "endTime": {
+          "stringValue": "15:00"
+        },
+        "mapQuery": {
+          "stringValue": ""
+        },
+        "icon": {
+          "stringValue": "🌟"
+        },
+        "descriptionEn": {
+          "stringValue": ""
+        }
+      },
+      "createTime": "2026-08-15T12:32:52.876788Z",
+      "updateTime": "2026-08-15T12:32:52.876788Z"
+    },
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/FaXDQ1FMvp16S2rsuTb2",
+      "fields": {
+        "description": {
+          "stringValue": "כניסה למלון ל-2 לילות! הוזמנו 3 חדרים ל-7 מבוגרים ו-6 ילדים."
+        },
+        "id": {
+          "stringValue": "e17867335191581"
+        },
+        "time": {
+          "stringValue": "14:00"
+        },
+        "title": {
+          "stringValue": "צ'ק-אין: Gozsdu Court Budapest"
+        },
+        "dayId": {
+          "stringValue": "day-1"
+        },
+        "duration": {
+          "integerValue": "90"
+        },
+        "icon": {
+          "stringValue": "🏨"
+        }
+      },
+      "createTime": "2026-08-14T18:51:59.292326Z",
+      "updateTime": "2026-08-14T18:51:59.292326Z"
+    },
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/KSPfQXWFGO0xD9voYAiF",
+      "fields": {
+        "title": {
+          "stringValue": "צ'ק-אאוט: Gozsdu Court"
+        },
+        "dayId": {
+          "stringValue": "day-3"
+        },
+        "description": {
+          "stringValue": "אורזים ועוזבים את המלון לפני איסוף הרכבים."
+        },
+        "icon": {
+          "stringValue": "🧳"
+        },
+        "id": {
+          "stringValue": "e1786733519675287"
+        },
+        "time": {
+          "stringValue": "09:00"
+        },
+        "duration": {
+          "integerValue": "60"
+        }
+      },
+      "createTime": "2026-08-14T18:51:59.797229Z",
+      "updateTime": "2026-08-14T18:51:59.797229Z"
+    },
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/Ugc1635bOdyNm87gftsm",
+      "fields": {
+        "title": {
+          "stringValue": "צ'ק-אין: Holiday Village Tatralandia"
+        },
+        "dayId": {
+          "stringValue": "day-3"
+        },
+        "duration": {
+          "integerValue": "90"
+        },
+        "id": {
+          "stringValue": "e1786393971846467"
+        },
+        "description": {
+          "stringValue": "הזמנה #2313114 ע\"ש עינת מלינוביץ. 4 חדרים. כולל ארוחת בוקר וכניסה לפארק המים."
+        },
+        "icon": {
+          "stringValue": "🎢"
+        },
+        "time": {
+          "stringValue": "16:00"
+        }
+      },
+      "createTime": "2026-08-10T20:32:52.161171Z",
+      "updateTime": "2026-08-10T20:32:52.161171Z"
+    },
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/WHpiqf4iOr78uoVJricK",
+      "fields": {
+        "mapQuery": {
+          "stringValue": ""
+        },
+        "time": {
+          "stringValue": "10:00"
+        },
+        "icon": {
+          "stringValue": "🌟"
+        },
+        "dayId": {
+          "stringValue": "day-4"
+        },
+        "title": {
+          "stringValue": "פארק מים טטרלנדיה"
+        },
+        "endTime": {
+          "stringValue": "17:00"
+        },
+        "titleEn": {
+          "stringValue": ""
+        },
+        "description": {
+          "stringValue": ""
+        },
+        "descriptionEn": {
+          "stringValue": ""
+        }
+      },
+      "createTime": "2026-08-15T06:48:24.465262Z",
+      "updateTime": "2026-08-15T06:48:24.465262Z"
+    },
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/bu3zifaiD10FcprI3xrR",
+      "fields": {
+        "duration": {
+          "integerValue": "180"
+        },
+        "title": {
+          "stringValue": "סיור בבודפשט - פפריקה"
+        },
+        "dayId": {
+          "stringValue": "day-2"
+        },
+        "id": {
+          "stringValue": "e1786394244856"
+        },
+        "mapQuery": {
+          "stringValue": "Erzsebet ter 1051 Budapest"
+        },
+        "description": {
+          "stringValue": ""
+        },
+        "time": {
+          "stringValue": "10:00"
+        },
+        "endTime": {
+          "stringValue": "13:00"
+        },
+        "icon": {
+          "stringValue": "🌟"
+        }
+      },
+      "createTime": "2026-08-10T20:37:25.445624Z",
+      "updateTime": "2026-08-10T21:03:12.559189Z"
+    },
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/jVuBRNtaV5AGCSCHcwOI",
+      "fields": {
+        "icon": {
+          "stringValue": "✈️"
+        },
+        "description": {
+          "stringValue": "טיסת וויזאייר יוצאת מנתב\"ג (טרמינל 3) ב-10:10, נוחתת בבודפשט (טרמינל 2B) ב-12:40. אישור: JI5ZUV"
+        },
+        "dayId": {
+          "stringValue": "day-1"
+        },
+        "id": {
+          "stringValue": "e1786733518610745"
+        },
+        "title": {
+          "stringValue": "טיסת W62508 (תל אביב ➡️ בודפשט)"
+        },
+        "duration": {
+          "integerValue": "150"
+        },
+        "time": {
+          "stringValue": "10:10"
+        }
+      },
+      "createTime": "2026-08-14T18:51:59.162033Z",
+      "updateTime": "2026-08-14T18:51:59.162033Z"
+    },
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/lwoe36WxYMcASiUss7jg",
+      "fields": {
+        "dayId": {
+          "stringValue": "day-1"
+        },
+        "title": {
+          "stringValue": "ארוחת ערב ב-The Magic II"
+        },
+        "icon": {
+          "stringValue": "🪄"
+        },
+        "duration": {
+          "integerValue": "120"
+        },
+        "description": {
+          "stringValue": "הזמנה ל-15 אנשים! (יש לשלוח הזמנות מראש 2-3 ימים לפני). תפריט: www.themagic2.hu/etlap"
+        },
+        "id": {
+          "stringValue": "e1786733519285827"
+        },
+        "time": {
+          "stringValue": "18:30"
+        }
+      },
+      "createTime": "2026-08-14T18:51:59.602560Z",
+      "updateTime": "2026-08-14T18:51:59.602560Z"
+    },
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/xmEa2NXsPLaARKPffg1Y",
+      "fields": {
+        "description": {
+          "stringValue": ""
+        },
+        "icon": {
+          "stringValue": "🌟"
+        },
+        "time": {
+          "stringValue": "20:00"
+        },
+        "duration": {
+          "integerValue": "120"
+        },
+        "endTime": {
+          "stringValue": "13:00"
+        },
+        "id": {
+          "stringValue": "e1786394318302"
+        },
+        "dayId": {
+          "stringValue": "day-2"
+        },
+        "title": {
+          "stringValue": "ארוחת ערב ב Twentysix Budapest"
+        },
+        "mapQuery": {
+          "stringValue": "Twentysix Budapest"
+        }
+      },
+      "createTime": "2026-08-10T20:38:38.884299Z",
+      "updateTime": "2026-08-10T21:03:31.228299Z"
+    },
+    {
+      "name": "projects/family-trip-e19ea/databases/(default)/documents/itinerary_events/z3gLUuSjtPTjeLNznSaF",
+      "fields": {
+        "title": {
+          "stringValue": "איסוף לנתבג - מיניבוס"
+        },
+        "dayId": {
+          "stringValue": "day-1"
+        },
+        "endTime": {
+          "stringValue": "07:30"
+        },
+        "icon": {
+          "stringValue": "🌟"
+        },
+        "description": {
+          "stringValue": "נהג - שלומי 054-234-5761"
+        },
+        "mapQuery": {
+          "stringValue": ""
+        },
+        "time": {
+          "stringValue": "06:45"
+        }
+      },
+      "createTime": "2026-08-11T10:27:18.383251Z",
+      "updateTime": "2026-08-11T12:25:10.740588Z"
+    }
+  ]
+}

@@ -81,7 +81,7 @@ const getItinerary = (lang) => {
 const resources = {
   en: {
     translation: {
-      nav: { home: 'Home', itinerary: 'Itinerary', docs: 'Docs', guidebook: 'Guidebook', recs: 'Recs' },
+      nav: { home: 'Home', itinerary: 'Itinerary', docs: 'Docs & Info', guidebook: 'Guidebook', recs: 'Recs' },
       home: {
         title: 'Asaf Family Trip', subtitle: 'Budapest & Slovakia',
         forecastTitle: 'Trip Forecast', live: 'Live', est: 'Est', fetching: 'Fetching live forecast...',
@@ -92,18 +92,22 @@ const resources = {
         reportIssueDesc: 'Describe the problem or what\'s missing...',
         cancel: 'Cancel', sendReport: 'Send Report', reporting: 'Sending...', reported: 'Reported!',
         weatherDays: { 'Aug 20': 'Aug 20', 'Aug 21': 'Aug 21', 'Aug 22': 'Aug 22', 'Aug 23': 'Aug 23', 'Aug 24': 'Aug 24', 'Aug 25': 'Aug 25', 'Aug 26': 'Aug 26', 'Aug 27': 'Aug 27', 'Aug 28': 'Aug 28', 'Aug 29': 'Aug 29' },
-        weatherLocs: { 'Budapest': 'Bud', 'Slovakia': 'Slo' }
+        weatherLocs: { 'Budapest': 'Bud', 'Slovakia': 'Slo' },
+        flightDetails: 'Flight Details'
       },
       itinerary: {
         title: 'Itinerary', feedBtn: 'Feed', dailyBtn: 'Daily', weeklyBtn: 'Weekly', addEvent: 'Add Event to', cancel: 'Cancel', add: 'Add Event',
         modalTitle: 'Title', modalDesc: 'Description'
       },
       docs: {
-        title: 'Docs & Logistics', subtitle: 'All important family documents',
-        noDocs: 'No documents uploaded yet.', uploadTitle: 'Upload Document',
-        docTitle: 'Document Title (e.g. Flight 410)', uploader: 'Your Name',
+        title: 'Docs & Info', subtitle: 'All important family documents and info',
+        noDocs: 'No documents uploaded yet.', uploadTitle: 'Upload Info or Document',
+        docTitle: 'Title (e.g. Flight 410)', uploader: 'Your Name',
         cancel: 'Cancel', upload: 'Upload', tapFile: '📄 Tap to select file...',
-        cats: { general: 'General', flights: 'Flights', hotels: 'Hotels', cars: 'Rental Cars', insurance: 'Insurance' }
+        cats: { general: 'General', flights: 'Flights', hotels: 'Hotels', cars: 'Rental Cars', insurance: 'Insurance' },
+        pleaseSelectFile: 'Please fill out the form.',
+        confirmDelete: 'Delete this item?',
+        download: 'Download'
       },
       guidebook: {
         title: 'Guidebook & Maps', subtitle: 'Tap any location to instantly open it as a pinned location in your Google Maps app.',
@@ -133,7 +137,7 @@ const resources = {
   },
   he: {
     translation: {
-      nav: { home: 'ראשי', itinerary: 'לו"ז', docs: 'מסמכים', guidebook: 'מפות', recs: 'המלצות' },
+      nav: { home: 'ראשי', itinerary: 'לו"ז', docs: 'מידע ומסמכים', guidebook: 'מפות', recs: 'המלצות' },
       home: {
         title: 'הטיול של משפחת אסף', subtitle: 'בודפשט וסלובקיה',
         forecastTitle: 'תחזית מזג אוויר', live: 'חי', est: 'הערכה', fetching: 'מוריד תחזית...',
@@ -144,18 +148,22 @@ const resources = {
         reportIssueDesc: 'תאר את הבעיה או מה שחסר לך...',
         cancel: 'ביטול', sendReport: 'שלח דיווח', reporting: 'שולח...', reported: 'נשלח!',
         weatherDays: { 'Aug 20': '20 באוג', 'Aug 21': '21 באוג', 'Aug 22': '22 באוג', 'Aug 23': '23 באוג', 'Aug 24': '24 באוג', 'Aug 25': '25 באוג', 'Aug 26': '26 באוג', 'Aug 27': '27 באוג', 'Aug 28': '28 באוג', 'Aug 29': '29 באוג' },
-        weatherLocs: { 'Budapest': 'בוד', 'Slovakia': 'סלו' }
+        weatherLocs: { 'Budapest': 'בוד', 'Slovakia': 'סלו' },
+        flightDetails: 'פרטי טיסות'
       },
       itinerary: {
         title: 'לוח זמנים', feedBtn: 'פיד', dailyBtn: 'יומי', weeklyBtn: 'שבועי', addEvent: 'הוסף אירוע ל-', cancel: 'ביטול', add: 'הוסף',
         modalTitle: 'כותרת', modalDesc: 'תיאור'
       },
       docs: {
-        title: 'מסמכים ולוגיסטיקה', subtitle: 'כל המסמכים החשובים של המשפחה',
-        noDocs: 'טרם הועלו מסמכים.', uploadTitle: 'העלאת מסמך',
-        docTitle: 'כותרת המסמך (לדוגמה: טיסת וויזאייר)', uploader: 'השם שלך',
+        title: 'מידע ומסמכים', subtitle: 'כל המידע והמסמכים של המשפחה',
+        noDocs: 'טרם הועלו מסמכים.', uploadTitle: 'הוספת מידע/מסמך',
+        docTitle: 'כותרת (לדוגמה: טיסת וויזאייר)', uploader: 'השם שלך',
         cancel: 'ביטול', upload: 'העלאה', tapFile: '📄 לחץ לבחירת קובץ...',
-        cats: { general: 'כללי', flights: 'טיסות', hotels: 'מלונות', cars: 'רכבים', insurance: 'ביטוח' }
+        cats: { general: 'כללי', flights: 'טיסות', hotels: 'מלונות', cars: 'רכבים', insurance: 'ביטוח' },
+        pleaseSelectFile: 'נא למלא את הטופס.',
+        confirmDelete: 'למחוק את הפריט?',
+        download: 'הורדה'
       },
       guidebook: {
         title: 'מפות והמלצות', subtitle: 'לחץ על כל מיקום כדי לפתוח אותו ישירות באפליקציית Google Maps.',
