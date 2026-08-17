@@ -120,6 +120,9 @@ export default function Docs() {
       // 1. Delete from Firestore
       await deleteDoc(doc(db, 'docs', id));
       setSelectedDoc(null);
+      if (id === currentFolderId) {
+        setCurrentFolderId(null);
+      }
       
       // 2. Try to delete from Storage if it's a firebase storage URL
       if (fileUrl && fileUrl.includes('firebasestorage.googleapis.com')) {
@@ -160,12 +163,25 @@ export default function Docs() {
       </p>
 
       {/* Docs Grid */}
-      {currentFolderId && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', cursor: 'pointer', color: 'var(--primary)', fontWeight: 'bold' }}
-             onClick={() => setCurrentFolderId(null)}>
-          ⬅️ Back to main folder
-        </div>
-      )}
+      {currentFolderId && (() => {
+        const currentFolder = docs.find(d => d.id === currentFolderId);
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px', background: 'rgba(255,255,255,0.8)', padding: '10px 15px', borderRadius: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: 'var(--primary)', fontWeight: 'bold' }}
+                 onClick={() => setCurrentFolderId(null)}>
+              ⬅️ {t('docs.backToMain') || 'Back'}
+            </div>
+            
+            {currentFolder && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontWeight: 'bold', color: '#333' }}>📁 {currentFolder.title}</span>
+                <button onClick={() => handleEditDoc(currentFolder)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 5px' }} title="Edit Folder">✏️</button>
+                <button onClick={() => handleDeleteDoc(currentFolder.id, currentFolder.fileUrl)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 5px' }} title="Delete Folder">🗑️</button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {docs.filter(d => (d.folderId || null) === currentFolderId).map(doc => (
           <div 
