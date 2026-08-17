@@ -17,6 +17,20 @@ const getWeatherIcon = (code) => {
   return '⛅'; // fallback
 };
 
+// The base itinerary to map against
+const tripDays = [
+  { date: 'Aug 20', loc: 'Budapest', locIndex: 0, apiDate: '2026-08-20' },
+  { date: 'Aug 21', loc: 'Budapest', locIndex: 0, apiDate: '2026-08-21' },
+  { date: 'Aug 22', loc: 'Budapest', locIndex: 0, apiDate: '2026-08-22' },
+  { date: 'Aug 23', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-23' },
+  { date: 'Aug 24', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-24' },
+  { date: 'Aug 25', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-25' },
+  { date: 'Aug 26', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-26' },
+  { date: 'Aug 27', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-27' },
+  { date: 'Aug 28', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-28' },
+  { date: 'Aug 29', loc: 'Budapest', locIndex: 0, apiDate: '2026-08-29' }
+];
+
 export default function Home() { 
   const [liveForecast, setLiveForecast] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -61,22 +75,6 @@ export default function Home() {
       setReportStatus('idle');
     }
   };
-
-  const itineraryData = t('itineraryData', { returnObjects: true });
-
-  // The base itinerary to map against
-  const tripDays = [
-    { date: 'Aug 20', loc: 'Budapest', locIndex: 0, apiDate: '2026-08-20' },
-    { date: 'Aug 21', loc: 'Budapest', locIndex: 0, apiDate: '2026-08-21' },
-    { date: 'Aug 22', loc: 'Budapest', locIndex: 0, apiDate: '2026-08-22' },
-    { date: 'Aug 23', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-23' },
-    { date: 'Aug 24', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-24' },
-    { date: 'Aug 25', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-25' },
-    { date: 'Aug 26', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-26' },
-    { date: 'Aug 27', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-27' },
-    { date: 'Aug 28', loc: 'Slovakia', locIndex: 1, apiDate: '2026-08-28' },
-    { date: 'Aug 29', loc: 'Budapest', locIndex: 0, apiDate: '2026-08-29' }
-  ];
 
   useEffect(() => {
     fetch('https://api.open-meteo.com/v1/forecast?latitude=47.4979,49.0833&longitude=19.0402,19.6167&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,weather_code&timezone=Europe%2FBudapest&forecast_days=16')
