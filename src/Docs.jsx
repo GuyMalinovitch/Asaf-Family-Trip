@@ -17,6 +17,7 @@ export default function Docs() {
 
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [currentFolderId, setCurrentFolderId] = useState(null);
+  const [dragOverFolderId, setDragOverFolderId] = useState(null);
 
   // Fetch docs from Firestore in real-time
   useEffect(() => {
@@ -27,6 +28,17 @@ export default function Docs() {
     });
     return () => unsubscribe();
   }, []);
+
+  const handleMoveDoc = async (docId, newFolderId) => {
+    if (docId === newFolderId) return;
+    try {
+      await updateDoc(doc(db, 'docs', docId), {
+        folderId: newFolderId
+      });
+    } catch (e) {
+      console.error("Error moving doc:", e);
+    }
+  };
 
   const handleAddDoc = async (e) => {
     e.preventDefault();
@@ -54,7 +66,7 @@ export default function Docs() {
             title: newDoc.title ? `${newDoc.title} - ${file.name}` : file.name,
             icon,
             fileUrl,
-            folderId: currentFolderId,
+            folderId: newDoc.folderId || null,
             timestamp: serverTimestamp()
           });
         }
@@ -73,6 +85,7 @@ export default function Docs() {
           await updateDoc(doc(db, 'docs', editingId), {
             ...newDoc,
             icon,
+            folderId: newDoc.folderId || null,
             ...(selectedFiles.length > 0 && { fileUrl })
           });
         } else {
@@ -80,7 +93,7 @@ export default function Docs() {
             ...newDoc,
             icon,
             fileUrl,
-            folderId: currentFolderId,
+            folderId: newDoc.folderId || null,
             timestamp: serverTimestamp()
           });
         }
@@ -105,7 +118,8 @@ export default function Docs() {
       category: docItem.category || 'General',
       notes: docItem.notes || '',
       fileUrl: docItem.fileUrl || '',
-      isFolder: docItem.isFolder || false
+      isFolder: docItem.isFolder || false,
+      folderId: docItem.folderId || null
     });
     setEditingId(docItem.id);
     setSelectedFiles([]);
@@ -149,7 +163,7 @@ export default function Docs() {
         <button 
           onClick={() => {
             setEditingId(null);
-            setNewDoc({ title: '', uploader: '', category: 'General', notes: '' });
+            setNewDoc({ title: '', uploader: '', category: 'General', notes: '', fileUrl: '', isFolder: false, folderId: currentFolderId || null });
             setSelectedFiles([]);
             setIsAdding(true);
           }}
@@ -186,15 +200,40 @@ export default function Docs() {
         {docs.filter(d => (d.folderId || null) === currentFolderId).map(doc => (
           <div 
             key={doc.id} 
+            draggable={true}
+            onDragStart={(e) => {
+              e.dataTransfer.setData('text/plain', doc.id);
+            }}
+            onDragOver={(e) => {
+              if (doc.isFolder) {
+                e.preventDefault();
+                setDragOverFolderId(doc.id);
+              }
+            }}
+            onDragLeave={(e) => {
+              if (doc.isFolder && dragOverFolderId === doc.id) {
+                setDragOverFolderId(null);
+              }
+            }}
+            onDrop={(e) => {
+              if (doc.isFolder) {
+                e.preventDefault();
+                setDragOverFolderId(null);
+                const draggedId = e.dataTransfer.getData('text/plain');
+                if (draggedId) handleMoveDoc(draggedId, doc.id);
+              }
+            }}
             onClick={() => doc.isFolder ? setCurrentFolderId(doc.id) : setSelectedDoc(doc)}
             style={{
               display: 'flex', alignItems: 'center', gap: '15px',
-              background: 'rgba(255,255,255,0.9)',
+              background: dragOverFolderId === doc.id ? 'rgba(0,198,255,0.2)' : 'rgba(255,255,255,0.9)',
+              border: dragOverFolderId === doc.id ? '2px dashed var(--primary)' : '2px solid transparent',
               borderRadius: '16px',
               padding: '15px',
               boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-              borderLeft: '4px solid var(--secondary)',
-              cursor: 'pointer'
+              borderLeft: dragOverFolderId === doc.id ? '4px dashed var(--primary)' : '4px solid var(--secondary)',
+              cursor: doc.isFolder ? 'pointer' : 'grab',
+              transition: 'all 0.2s'
             }}
           >
             <div style={{ 
@@ -239,6 +278,21 @@ export default function Docs() {
                 >
                   <option value="file">📄 Upload File(s)</option>
                   <option value="folder">📁 Create Folder</option>
+                </select>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold', color: '#555', fontSize: '0.95rem' }}>
+                Parent:
+                <select 
+                  className="glass-input" 
+                  style={{ flex: 1, padding: '10px', appearance: 'none', fontWeight: 'bold', cursor: 'pointer', background: 'rgba(0,198,255,0.05)' }}
+                  value={newDoc.folderId || ''} 
+                  onChange={e => setNewDoc({...newDoc, folderId: e.target.value || null})}
+                >
+                  <option value="">(Root / Main Directory)</option>
+                  {docs.filter(d => d.isFolder && d.id !== editingId).map(folder => (
+                    <option key={folder.id} value={folder.id}>📁 {folder.title}</option>
+                  ))}
                 </select>
               </label>
 
