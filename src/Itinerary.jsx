@@ -65,7 +65,7 @@ export default function Itinerary() {
     try {
       const payload = {
         ...newEvent,
-        dayId: activeDayId
+        dayId: newEvent.dayId || activeDayId
       };
       
       if (editingId) {
@@ -77,7 +77,7 @@ export default function Itinerary() {
       setIsAdding(false);
       setEditingId(null);
       setNewEvent({ 
-        time: '12:00', endTime: '13:00', title: '', titleEn: '', 
+        dayId: activeDayId, time: '12:00', endTime: '13:00', title: '', titleEn: '', 
         description: '', descriptionEn: '', icon: '🌟', mapQuery: '' 
       });
     } catch (error) {
@@ -87,6 +87,7 @@ export default function Itinerary() {
 
   const handleEditEvent = (ev) => {
     setNewEvent({
+      dayId: ev.dayId || activeDayId,
       time: ev.time || '12:00',
       endTime: ev.endTime || '13:00',
       title: ev.title || '',
@@ -512,6 +513,15 @@ export default function Itinerary() {
           <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', overflowY: 'auto', maxHeight: '90vh' }}>
             <h3 style={{ margin: '0 0 15px 0' }}>{editingId ? 'Edit Event' : t('itinerary.addEvent') + ' ' + activeDay.date}</h3>
             <form onSubmit={handleAddEvent} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold' }}>Day</label>
+                <select className="glass-input" style={{ padding: '10px', appearance: 'none' }}
+                  value={newEvent.dayId || activeDayId} onChange={e => setNewEvent({...newEvent, dayId: e.target.value})}>
+                  {data.map(d => (
+                    <option key={d.id} value={d.id}>{d.date} - {d.title}</option>
+                  ))}
+                </select>
+              </div>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <label style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'bold' }}>Start Time</label>
@@ -646,7 +656,7 @@ export default function Itinerary() {
       <button 
         onClick={() => {
           setEditingId(null);
-          setNewEvent({ time: '09:00', title: '', duration: 60, icon: '📍', category: 'Point of Interest' });
+          setNewEvent({ dayId: activeDayId, time: '09:00', endTime: '10:00', title: '', titleEn: '', description: '', descriptionEn: '', icon: '🌟', category: 'Point of Interest', mapQuery: '' });
           setIsAdding(true);
         }}
         style={{
