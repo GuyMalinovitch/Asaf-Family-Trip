@@ -74,13 +74,6 @@ const getItinerary = (lang) => {
       title: isHe ? 'חוזרים הביתה' : 'Heading Home',
       location: isHe ? 'בודפשט ➡️ ישראל' : 'Budapest ➡️ Israel',
       events: []
-    },
-    {
-      id: 'day-11',
-      date: isHe ? 'יום א׳, 30 באוגוסט' : 'Sun, Aug 30',
-      title: isHe ? 'הגעה לארץ / מנוחה' : 'Arrival / Rest',
-      location: isHe ? 'ישראל' : 'Israel',
-      events: []
     }
   ];
 };
@@ -98,7 +91,7 @@ const resources = {
         reportIssueTitle: 'Subject',
         reportIssueDesc: 'Describe the problem or what\'s missing...',
         cancel: 'Cancel', sendReport: 'Send Report', reporting: 'Sending...', reported: 'Reported!',
-        weatherDays: { 'Aug 20': 'Thu, Aug 20', 'Aug 21': 'Fri, Aug 21', 'Aug 22': 'Sat, Aug 22', 'Aug 23': 'Sun, Aug 23', 'Aug 24': 'Mon, Aug 24', 'Aug 25': 'Tue, Aug 25', 'Aug 26': 'Wed, Aug 26', 'Aug 27': 'Thu, Aug 27', 'Aug 28': 'Fri, Aug 28', 'Aug 29': 'Sat, Aug 29', 'Aug 30': 'Sun, Aug 30' },
+        weatherDays: { 'Aug 20': 'Thu, Aug 20', 'Aug 21': 'Fri, Aug 21', 'Aug 22': 'Sat, Aug 22', 'Aug 23': 'Sun, Aug 23', 'Aug 24': 'Mon, Aug 24', 'Aug 25': 'Tue, Aug 25', 'Aug 26': 'Wed, Aug 26', 'Aug 27': 'Thu, Aug 27', 'Aug 28': 'Fri, Aug 28', 'Aug 29': 'Sat, Aug 29' },
         weatherLocs: { 'Budapest': 'Bud', 'Slovakia': 'Slo' },
         flightDetails: 'Flight Details'
       },
@@ -154,7 +147,7 @@ const resources = {
         reportIssueTitle: 'נושא',
         reportIssueDesc: 'תאר את הבעיה או מה שחסר לך...',
         cancel: 'ביטול', sendReport: 'שלח דיווח', reporting: 'שולח...', reported: 'נשלח!',
-        weatherDays: { 'Aug 20': 'יום ה׳, 20 באוג', 'Aug 21': 'יום ו׳, 21 באוג', 'Aug 22': 'שבת, 22 באוג', 'Aug 23': 'יום א׳, 23 באוג', 'Aug 24': 'יום ב׳, 24 באוג', 'Aug 25': 'יום ג׳, 25 באוג', 'Aug 26': 'יום ד׳, 26 באוג', 'Aug 27': 'יום ה׳, 27 באוג', 'Aug 28': 'יום ו׳, 28 באוג', 'Aug 29': 'שבת, 29 באוג', 'Aug 30': 'יום א׳, 30 באוג' },
+        weatherDays: { 'Aug 20': 'יום ה׳, 20 באוג', 'Aug 21': 'יום ו׳, 21 באוג', 'Aug 22': 'שבת, 22 באוג', 'Aug 23': 'יום א׳, 23 באוג', 'Aug 24': 'יום ב׳, 24 באוג', 'Aug 25': 'יום ג׳, 25 באוג', 'Aug 26': 'יום ד׳, 26 באוג', 'Aug 27': 'יום ה׳, 27 באוג', 'Aug 28': 'יום ו׳, 28 באוג', 'Aug 29': 'שבת, 29 באוג' },
         weatherLocs: { 'Budapest': 'בודפשט', 'Slovakia': 'סלובקיה' },
         flightDetails: 'פרטי טיסות'
       },
