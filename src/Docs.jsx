@@ -16,6 +16,7 @@ export default function Docs() {
   const fileInputRef = useRef(null);
 
   const [selectedDoc, setSelectedDoc] = useState(null);
+  const [currentFolderId, setCurrentFolderId] = useState(null);
 
   // Fetch docs from Firestore in real-time
   useEffect(() => {
@@ -34,10 +35,11 @@ export default function Docs() {
     
     // Assign a basic icon based on category
     let icon = '📄';
-    if (newDoc.category === 'Flights') icon = '✈️';
-    if (newDoc.category === 'Hotels') icon = '🏨';
-    if (newDoc.category === 'Cars') icon = '🚗';
-    if (newDoc.category === 'Insurance') icon = '🛡️';
+    if (newDoc.isFolder) icon = '📁';
+    else if (newDoc.category === 'Flights') icon = '✈️';
+    else if (newDoc.category === 'Hotels') icon = '🏨';
+    else if (newDoc.category === 'Cars') icon = '🚗';
+    else if (newDoc.category === 'Insurance') icon = '🛡️';
 
     try {
       let fileUrl = newDoc.fileUrl || '';
@@ -62,6 +64,7 @@ export default function Docs() {
           ...newDoc,
           icon,
           fileUrl,
+          folderId: currentFolderId,
           timestamp: serverTimestamp()
         });
       }
@@ -84,7 +87,8 @@ export default function Docs() {
       uploader: docItem.uploader || '',
       category: docItem.category || 'General',
       notes: docItem.notes || '',
-      fileUrl: docItem.fileUrl || ''
+      fileUrl: docItem.fileUrl || '',
+      isFolder: docItem.isFolder || false
     });
     setEditingId(docItem.id);
     setSelectedFile(null);
@@ -139,11 +143,17 @@ export default function Docs() {
       </p>
 
       {/* Docs Grid */}
+      {currentFolderId && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', cursor: 'pointer', color: 'var(--primary)', fontWeight: 'bold' }}
+             onClick={() => setCurrentFolderId(null)}>
+          ⬅️ Back to main folder
+        </div>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        {docs.map(doc => (
+        {docs.filter(d => (d.folderId || null) === currentFolderId).map(doc => (
           <div 
             key={doc.id} 
-            onClick={() => setSelectedDoc(doc)}
+            onClick={() => doc.isFolder ? setCurrentFolderId(doc.id) : setSelectedDoc(doc)}
             style={{
               display: 'flex', alignItems: 'center', gap: '15px',
               background: 'rgba(255,255,255,0.9)',
@@ -164,13 +174,13 @@ export default function Docs() {
               <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: '#222' }}>{doc.title}</h3>
               <div style={{ display: 'flex', gap: '10px', fontSize: '0.85rem', color: '#666' }}>
                 <span>👤 {doc.uploader}</span>
-                <span>•</span>
-                <span>{doc.category}</span>
+                {!doc.isFolder && <span>•</span>}
+                {!doc.isFolder && <span>{doc.category}</span>}
               </div>
             </div>
           </div>
         ))}
-        {docs.length === 0 ? (
+        {docs.filter(d => (d.folderId || null) === currentFolderId).length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
             {t('docs.noDocs')}
           </div>
@@ -186,34 +196,43 @@ export default function Docs() {
           <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', overflowY: 'auto', maxHeight: '90vh' }}>
             <h3 style={{ margin: '0 0 15px 0' }}>{editingId ? 'Edit Document' : t('docs.uploadTitle')}</h3>
             <form onSubmit={handleAddDoc} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: '#555', cursor: 'pointer', background: 'rgba(0,198,255,0.05)', padding: '10px', borderRadius: '8px', fontWeight: 'bold' }}>
+                <input type="checkbox" style={{ transform: 'scale(1.2)' }} checked={newDoc.isFolder || false} onChange={e => setNewDoc({...newDoc, isFolder: e.target.checked})} />
+                This is a folder (container)
+              </label>
+
               <input required type="text" placeholder={t('docs.docTitle')} className="glass-input" style={{ padding: '10px' }}
                 value={newDoc.title} onChange={e => setNewDoc({...newDoc, title: e.target.value})} />
               <input required type="text" placeholder={t('docs.uploader')} className="glass-input" style={{ padding: '10px' }}
                 value={newDoc.uploader} onChange={e => setNewDoc({...newDoc, uploader: e.target.value})} />
               
-              <select className="glass-input" style={{ padding: '10px', appearance: 'none' }}
-                value={newDoc.category} onChange={e => setNewDoc({...newDoc, category: e.target.value})}>
-                <option value="General">{t('docs.cats.general')}</option>
-                <option value="Flights">{t('docs.cats.flights')}</option>
-                <option value="Hotels">{t('docs.cats.hotels')}</option>
-                <option value="Cars">{t('docs.cats.cars')}</option>
-                <option value="Insurance">{t('docs.cats.insurance')}</option>
-              </select>
+              {!newDoc.isFolder && (
+                <>
+                  <select className="glass-input" style={{ padding: '10px', appearance: 'none' }}
+                    value={newDoc.category} onChange={e => setNewDoc({...newDoc, category: e.target.value})}>
+                    <option value="General">{t('docs.cats.general')}</option>
+                    <option value="Flights">{t('docs.cats.flights')}</option>
+                    <option value="Hotels">{t('docs.cats.hotels')}</option>
+                    <option value="Cars">{t('docs.cats.cars')}</option>
+                    <option value="Insurance">{t('docs.cats.insurance')}</option>
+                  </select>
 
-              <textarea placeholder="Notes (Optional)" className="glass-input" style={{ padding: '10px', minHeight: '60px', resize: 'vertical' }}
-                value={newDoc.notes || ''} onChange={e => setNewDoc({...newDoc, notes: e.target.value})} />
+                  <textarea placeholder="Notes (Optional)" className="glass-input" style={{ padding: '10px', minHeight: '60px', resize: 'vertical' }}
+                    value={newDoc.notes || ''} onChange={e => setNewDoc({...newDoc, notes: e.target.value})} />
 
-              <input 
-                type="file" 
-                ref={fileInputRef}
-                onChange={(e) => setSelectedFile(e.target.files[0])}
-                style={{ display: 'none' }}
-              />
-              <div 
-                onClick={() => fileInputRef.current.click()}
-                style={{ padding: '20px', border: '2px dashed var(--primary)', borderRadius: '12px', textAlign: 'center', color: 'var(--primary)', cursor: 'pointer', background: 'rgba(0,198,255,0.05)' }}>
-                {selectedFile ? selectedFile.name : (editingId && newDoc.fileUrl) ? (t('docs.tapFile') + ' (Optional - keep existing)') : t('docs.tapFile') + ' (Optional)'}
-              </div>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef}
+                    onChange={(e) => setSelectedFile(e.target.files[0])}
+                    style={{ display: 'none' }}
+                  />
+                  <div 
+                    onClick={() => fileInputRef.current.click()}
+                    style={{ padding: '20px', border: '2px dashed var(--primary)', borderRadius: '12px', textAlign: 'center', color: 'var(--primary)', cursor: 'pointer', background: 'rgba(0,198,255,0.05)' }}>
+                    {selectedFile ? selectedFile.name : (editingId && newDoc.fileUrl) ? (t('docs.tapFile') + ' (Optional - keep existing)') : t('docs.tapFile') + ' (Optional)'}
+                  </div>
+                </>
+              )}
               
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button type="button" onClick={() => setIsAdding(false)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #ccc', background: 'transparent', cursor: 'pointer', fontWeight: 'bold' }}>{t('docs.cancel')}</button>
