@@ -6,7 +6,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 import { renderTextWithLinks } from './utils';
 
 export default function Docs() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [docs, setDocs] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -169,7 +169,7 @@ export default function Docs() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px', background: 'rgba(255,255,255,0.8)', padding: '10px 15px', borderRadius: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: 'var(--primary)', fontWeight: 'bold' }}
                  onClick={() => setCurrentFolderId(null)}>
-              ⬅️ {t('docs.backToMain') || 'Back'}
+              ⬅️ {i18n.language === 'he' ? 'חזור' : 'Back'}
             </div>
             
             {currentFolder && (
