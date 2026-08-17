@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { db } from './firebase';
-import { collection, addDoc, updateDoc, onSnapshot, query, doc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, onSnapshot, query, doc, deleteDoc, setDoc } from 'firebase/firestore';
 import { renderTextWithLinks } from './utils';
 
 // Helper to convert "HH:mm" to minutes since 00:00
@@ -25,6 +25,20 @@ export default function Itinerary() {
     time: '12:00', endTime: '13:00', title: '', titleEn: '', 
     description: '', descriptionEn: '', icon: '🌟', mapQuery: '' 
   });
+  
+  const [dbDayTitles, setDbDayTitles] = useState({});
+  const [editingDayTitle, setEditingDayTitle] = useState(false);
+  const [newDayTitle, setNewDayTitle] = useState('');
+
+  // Fetch custom day titles
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'itinerary_days', 'titles'), (docSnap) => {
+      if (docSnap.exists()) {
+        setDbDayTitles(docSnap.data());
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // Current time for the red line
   const [now, setNow] = useState(new Date());
@@ -47,6 +61,9 @@ export default function Itinerary() {
   const data = useMemo(() => {
     const merged = JSON.parse(JSON.stringify(itineraryData)); // Deep copy
     merged.forEach(day => {
+      if (dbDayTitles[day.id]) {
+        day.title = dbDayTitles[day.id];
+      }
       const dayDbEvents = dbEvents.filter(ev => ev.dayId === day.id);
       day.events = [...day.events, ...dayDbEvents].map(ev => ({
         ...ev,
@@ -56,7 +73,7 @@ export default function Itinerary() {
       day.events.sort((a, b) => timeToMins(a.time) - timeToMins(b.time));
     });
     return merged;
-  }, [itineraryData, dbEvents]);
+  }, [itineraryData, dbEvents, dbDayTitles]);
 
   const activeDay = data.find(d => d.id === activeDayId);
 
@@ -108,6 +125,21 @@ export default function Itinerary() {
       await deleteDoc(doc(db, 'itinerary_events', firebaseId));
       setSelectedEvent(null);
     }
+  };
+
+  const handleSaveDayTitle = async () => {
+    if (newDayTitle.trim() === '' || newDayTitle === activeDay.title) {
+      setEditingDayTitle(false);
+      return;
+    }
+    try {
+      await setDoc(doc(db, 'itinerary_days', 'titles'), {
+        [activeDayId]: newDayTitle
+      }, { merge: true });
+    } catch (e) {
+      console.error(e);
+    }
+    setEditingDayTitle(false);
   };
 
   // Calendar View Constants
@@ -210,9 +242,31 @@ export default function Itinerary() {
       {/* Main Content Area */}
       <div className="animate-fade-in" key={`${activeDay.id}-${viewMode}`}>
         {viewMode !== 'feed' && (
-          <h3 style={{ margin: '0 0 15px 0', fontSize: '1.2rem', color: '#333' }}>
-            {activeDay.title}
-          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+            {editingDayTitle ? (
+              <input 
+                className="glass-input" 
+                style={{ padding: '8px', fontSize: '1.2rem', fontWeight: 'bold', width: '100%', maxWidth: '300px' }}
+                value={newDayTitle}
+                onChange={e => setNewDayTitle(e.target.value)}
+                onBlur={handleSaveDayTitle}
+                onKeyDown={e => e.key === 'Enter' && handleSaveDayTitle()}
+                autoFocus
+              />
+            ) : (
+              <>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#333' }}>
+                  {activeDay.title}
+                </h3>
+                <button 
+                  onClick={() => { setEditingDayTitle(true); setNewDayTitle(activeDay.title); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#888', padding: '0 5px' }}
+                >
+                  ✏️
+                </button>
+              </>
+            )}
+          </div>
         )}
         
         {viewMode === 'feed' && (
