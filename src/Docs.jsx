@@ -213,10 +213,15 @@ export default function Docs() {
           <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '25px', background: 'rgba(255,255,255,0.95)', overflowY: 'auto', maxHeight: '90vh' }}>
             <h3 style={{ margin: '0 0 15px 0' }}>{editingId ? 'Edit Document' : t('docs.uploadTitle')}</h3>
             <form onSubmit={handleAddDoc} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: '#555', cursor: 'pointer', background: 'rgba(0,198,255,0.05)', padding: '10px', borderRadius: '8px', fontWeight: 'bold' }}>
-                <input type="checkbox" style={{ transform: 'scale(1.2)' }} checked={newDoc.isFolder || false} onChange={e => setNewDoc({...newDoc, isFolder: e.target.checked})} />
-                This is a folder (container)
-              </label>
+              <select 
+                className="glass-input" 
+                style={{ padding: '10px', appearance: 'none', fontWeight: 'bold', cursor: 'pointer', background: 'rgba(0,198,255,0.05)' }}
+                value={newDoc.isFolder ? 'folder' : 'file'} 
+                onChange={e => setNewDoc({...newDoc, isFolder: e.target.value === 'folder'})}
+              >
+                <option value="file">📄 Upload File(s)</option>
+                <option value="folder">📁 Create Folder</option>
+              </select>
 
               <input required type="text" placeholder={t('docs.docTitle')} className="glass-input" style={{ padding: '10px' }}
                 value={newDoc.title} onChange={e => setNewDoc({...newDoc, title: e.target.value})} />
