@@ -108,7 +108,7 @@ export default function Docs() {
       isFolder: docItem.isFolder || false
     });
     setEditingId(docItem.id);
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setSelectedDoc(null);
     setIsAdding(true);
   };
@@ -147,7 +147,7 @@ export default function Docs() {
           onClick={() => {
             setEditingId(null);
             setNewDoc({ title: '', uploader: '', category: 'General', notes: '' });
-            setSelectedFile(null);
+            setSelectedFiles([]);
             setIsAdding(true);
           }}
           style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0, 198, 255, 0.3)' }}
