@@ -12,7 +12,7 @@ export default function Docs() {
   const [isUploading, setIsUploading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [newDoc, setNewDoc] = useState({ title: '', uploader: '', category: 'General' });
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const fileInputRef = useRef(null);
 
   const [selectedDoc, setSelectedDoc] = useState(null);
@@ -42,37 +42,54 @@ export default function Docs() {
     else if (newDoc.category === 'Insurance') icon = '🛡️';
 
     try {
-      let fileUrl = newDoc.fileUrl || '';
-      
-      if (selectedFile) {
-        // Upload new to Firebase Storage
-        const fileRef = ref(storage, `docs/${Date.now()}_${selectedFile.name}`);
-        await uploadBytes(fileRef, selectedFile);
-        fileUrl = await getDownloadURL(fileRef);
-      }
+      if (!editingId && selectedFiles.length > 1) {
+        // Upload multiple files
+        for (const file of selectedFiles) {
+          const fileRef = ref(storage, `docs/${Date.now()}_${file.name}`);
+          await uploadBytes(fileRef, file);
+          const fileUrl = await getDownloadURL(fileRef);
 
-      if (editingId) {
-        // Update existing metadata
-        await updateDoc(doc(db, 'docs', editingId), {
-          ...newDoc,
-          icon,
-          ...(selectedFile && { fileUrl }) // Update fileUrl only if a new file is uploaded
-        });
+          await addDoc(collection(db, 'docs'), {
+            ...newDoc,
+            title: newDoc.title ? `${newDoc.title} - ${file.name}` : file.name,
+            icon,
+            fileUrl,
+            folderId: currentFolderId,
+            timestamp: serverTimestamp()
+          });
+        }
       } else {
-        // Save new metadata to Firestore
-        await addDoc(collection(db, 'docs'), {
-          ...newDoc,
-          icon,
-          fileUrl,
-          folderId: currentFolderId,
-          timestamp: serverTimestamp()
-        });
+        // Single file or no file
+        let fileUrl = newDoc.fileUrl || '';
+        
+        if (selectedFiles.length > 0) {
+          const file = selectedFiles[0];
+          const fileRef = ref(storage, `docs/${Date.now()}_${file.name}`);
+          await uploadBytes(fileRef, file);
+          fileUrl = await getDownloadURL(fileRef);
+        }
+
+        if (editingId) {
+          await updateDoc(doc(db, 'docs', editingId), {
+            ...newDoc,
+            icon,
+            ...(selectedFiles.length > 0 && { fileUrl })
+          });
+        } else {
+          await addDoc(collection(db, 'docs'), {
+            ...newDoc,
+            icon,
+            fileUrl,
+            folderId: currentFolderId,
+            timestamp: serverTimestamp()
+          });
+        }
       }
 
       setIsAdding(false);
       setEditingId(null);
       setNewDoc({ title: '', uploader: '', category: 'General', notes: '' });
-      setSelectedFile(null);
+      setSelectedFiles([]);
     } catch (error) {
       console.error("Error saving document:", error);
       alert('Error: ' + error.message);
@@ -222,14 +239,17 @@ export default function Docs() {
 
                   <input 
                     type="file" 
+                    multiple
                     ref={fileInputRef}
-                    onChange={(e) => setSelectedFile(e.target.files[0])}
+                    onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
                     style={{ display: 'none' }}
                   />
                   <div 
                     onClick={() => fileInputRef.current.click()}
                     style={{ padding: '20px', border: '2px dashed var(--primary)', borderRadius: '12px', textAlign: 'center', color: 'var(--primary)', cursor: 'pointer', background: 'rgba(0,198,255,0.05)' }}>
-                    {selectedFile ? selectedFile.name : (editingId && newDoc.fileUrl) ? (t('docs.tapFile') + ' (Optional - keep existing)') : t('docs.tapFile') + ' (Optional)'}
+                    {selectedFiles.length > 0 
+                      ? selectedFiles.map(f => f.name).join(', ') 
+                      : (editingId && newDoc.fileUrl) ? (t('docs.tapFile') + ' (Optional - keep existing)') : t('docs.tapFile') + ' (Optional)'}
                   </div>
                 </>
               )}
